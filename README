@@ -1,0 +1,41 @@
+Hessian AMQP - Remote Procedure Call over AMQP with Hessian
+-----------------------------------------------------------
+
+Hessian AMQP is a component helping the deployment of Hessian services using
+an AMQP server as the underlying transport. The principle is almost identical
+to Hessian services over HTTP:
+
+
+1. Create an interface defining the methods exposed:
+
+    public interface EchoService {
+        String echo(String message);
+    }
+
+
+2. Implement the interface and extend the HessianEndpoint class
+   (this is the equivalent of the HessianServlet):
+
+    public class EchoServiceEndpoint extends HessianEndpoint implements EchoService {
+
+    public String echo(String message) {
+        return message;
+    }
+}
+
+
+3. Deploy the endpoint by attaching it to a Qpid session:
+
+    EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
+    endpoint.run(session);
+
+
+4. On the client side, create a proxy of the interface:
+
+    AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+    EchoService service = factory.create(EchoService.class, "qpid://guest:guest@localhost/test");
+
+
+5. The service is ready to be consumed!
+
+    String echo = service.echo("Hello Hessian!");
