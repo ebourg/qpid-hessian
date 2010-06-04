@@ -18,7 +18,6 @@ package org.apache.qpid.contrib.hessian;
 
 import junit.framework.TestCase;
 import org.apache.qpid.transport.Connection;
-import org.apache.qpid.transport.Session;
 
 /**
  * @author Emmanuel Bourg
@@ -29,39 +28,35 @@ public class AMQPHessianProxyTest extends TestCase
     private String HOSTNAME = "localhost";
 
     private Connection connection;
-    private Session session;
 
     protected void setUp() throws Exception
     {
         connection = new Connection();
         connection.connect(HOSTNAME, 5672, "test", "guest", "guest");
-        
-        session = connection.createSession(0);
     }
 
     protected void tearDown() throws Exception
     {
-        session.close();
         connection.close();
     }
 
     public void testEcho() throws Exception {
         EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
-        endpoint.run(session);
-
+        endpoint.run(connection);
+        
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
-
+        
         EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
         String message = "Hello Hessian!";
-
+        
         assertEquals(message, service.echo(message));
         assertEquals(message, service.echo(message));
     }
 
     public void testException() throws Exception {
         EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
-        endpoint.run(session);
+        endpoint.run(connection);
         
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);

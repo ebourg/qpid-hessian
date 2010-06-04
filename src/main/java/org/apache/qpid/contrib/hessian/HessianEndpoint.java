@@ -26,6 +26,7 @@ import java.util.zip.GZIPOutputStream;
 
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
+import org.apache.qpid.transport.Connection;
 import org.apache.qpid.transport.DeliveryProperties;
 import org.apache.qpid.transport.Header;
 import org.apache.qpid.transport.MessageAcceptMode;
@@ -133,8 +134,10 @@ public class HessianEndpoint
         session.sync();
     }
     
-    public void run(final Session session)
+    public void run(Connection conn)
     {
+        final Session session = conn.createSession(0);
+        
         createRequestQueue(session);
         
         session.setSessionListener(new SessionListener()
