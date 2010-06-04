@@ -27,8 +27,8 @@ import java.lang.reflect.Proxy;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
 
 import com.caucho.hessian.client.HessianRuntimeException;
 import com.caucho.hessian.io.AbstractHessianInput;
@@ -108,13 +108,13 @@ public class AMQPHessianProxy implements InvocationHandler
             
             MessageTransfer message = _factory.getReadTimeout() > 0 ? response.get(_factory.getReadTimeout(), TimeUnit.MILLISECONDS) : response.get();
             MessageProperties props = message.getHeader().get(MessageProperties.class);
-            boolean compressed = "gzip".equals(props.getContentEncoding());
+            boolean compressed = "deflate".equals(props.getContentEncoding());
             
             AbstractHessianInput in;
 
             InputStream is = new ByteArrayInputStream(message.getBodyBytes());
             if (compressed) {
-                is = new GZIPInputStream(is);
+                is = new DeflaterInputStream(is);
             }
             
             int code = is.read();
@@ -199,7 +199,7 @@ public class AMQPHessianProxy implements InvocationHandler
         session.setSessionListener(listener);
         
         byte[] payload = createRequestBody(method, args);
-        
+
         DeliveryProperties deliveryProps = new DeliveryProperties();
         deliveryProps.setRoutingKey(requestQueue);
         
@@ -207,7 +207,7 @@ public class AMQPHessianProxy implements InvocationHandler
         messageProperties.setReplyTo(new ReplyTo("amq.direct", replyQueue));
         messageProperties.setContentType("application/x-hessian");
         if (_factory.isCompressed()) {
-            messageProperties.setContentEncoding("gzip");
+            messageProperties.setContentEncoding("deflate");
         }
         
         session.messageTransfer("amq.direct", MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, new Header(deliveryProps, messageProperties), payload);
@@ -250,14 +250,14 @@ public class AMQPHessianProxy implements InvocationHandler
         }
         
         ByteArrayOutputStream payload = new ByteArrayOutputStream(256);
-        OutputStream os = _factory.isCompressed() ? new GZIPOutputStream(payload) : payload;
+        OutputStream os = _factory.isCompressed() ? new DeflaterOutputStream(payload) : payload;
         
         AbstractHessianOutput out = _factory.getHessianOutput(os);
         
         out.call(methodName, args);
-        if (os instanceof GZIPOutputStream)
+        if (os instanceof DeflaterOutputStream)
         {
-            ((GZIPOutputStream) os).finish();
+            ((DeflaterOutputStream) os).finish();
         }
         out.flush();
         

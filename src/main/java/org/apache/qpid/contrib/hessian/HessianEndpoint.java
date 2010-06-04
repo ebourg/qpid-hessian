@@ -21,8 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
 
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
@@ -169,7 +169,7 @@ public class HessianEndpoint
             private void sendReponse(Session session, MessageTransfer xfr) throws IOException {
                 MessageProperties props = xfr.getHeader().get(MessageProperties.class);
                 ReplyTo from = props.getReplyTo();
-                boolean compressed = "gzip".equals(props.getContentEncoding());
+                boolean compressed = "deflate".equals(props.getContentEncoding());
 
                 DeliveryProperties deliveryProps = new DeliveryProperties();
                 deliveryProps.setRoutingKey(from.getRoutingKey());
@@ -180,7 +180,7 @@ public class HessianEndpoint
                 messageProperties.setContentType("application/x-hessian");
                 if (compressed)
                 {
-                    messageProperties.setContentEncoding("gzip");
+                    messageProperties.setContentEncoding("deflate");
                 }
 
                 session.messageTransfer("amq.direct", MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, new Header(deliveryProps, messageProperties), response);
@@ -198,17 +198,17 @@ public class HessianEndpoint
         {
             InputStream in = new ByteArrayInputStream(request);
             if (compressed) {
-                in = new GZIPInputStream(new ByteArrayInputStream(request));
+                in = new InflaterInputStream(new ByteArrayInputStream(request));
             }
             
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            OutputStream out = compressed ? new GZIPOutputStream(bout) : bout;
+            OutputStream out = compressed ? new DeflaterOutputStream(bout) : bout;
             
             skeleton.invoke(in, out, getSerializerFactory());
 
-            if (out instanceof GZIPOutputStream)
+            if (out instanceof DeflaterOutputStream)
             {
-                ((GZIPOutputStream) out).finish();
+                ((DeflaterOutputStream) out).finish();
             }
             out.flush();
             out.close();
