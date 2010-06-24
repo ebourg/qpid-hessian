@@ -21,8 +21,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.InflaterInputStream;
+import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
@@ -198,11 +200,17 @@ public class HessianEndpoint
         {
             InputStream in = new ByteArrayInputStream(request);
             if (compressed) {
-                in = new InflaterInputStream(new ByteArrayInputStream(request));
+                in = new InflaterInputStream(new ByteArrayInputStream(request), new Inflater(true));
             }
             
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            OutputStream out = compressed ? new DeflaterOutputStream(bout) : bout;
+            OutputStream out;
+            if (compressed) {
+                Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+                out = new DeflaterOutputStream(bout, deflater);
+            } else {
+                out = bout;
+            }
             
             skeleton.invoke(in, out, getSerializerFactory());
 

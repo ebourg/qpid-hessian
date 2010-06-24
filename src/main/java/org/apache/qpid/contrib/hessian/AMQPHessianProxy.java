@@ -27,8 +27,10 @@ import java.lang.reflect.Proxy;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.DeflaterInputStream;
+import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 import com.caucho.hessian.client.HessianRuntimeException;
 import com.caucho.hessian.io.AbstractHessianInput;
@@ -111,10 +113,10 @@ public class AMQPHessianProxy implements InvocationHandler
             boolean compressed = "deflate".equals(props.getContentEncoding());
             
             AbstractHessianInput in;
-
+            
             InputStream is = new ByteArrayInputStream(message.getBodyBytes());
             if (compressed) {
-                is = new DeflaterInputStream(is);
+                is = new InflaterInputStream(is, new Inflater(true));
             }
             
             int code = is.read();
@@ -250,7 +252,13 @@ public class AMQPHessianProxy implements InvocationHandler
         }
         
         ByteArrayOutputStream payload = new ByteArrayOutputStream(256);
-        OutputStream os = _factory.isCompressed() ? new DeflaterOutputStream(payload) : payload;
+        OutputStream os;
+        if (_factory.isCompressed()) {
+            Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+            os = new DeflaterOutputStream(payload, deflater);
+        } else {
+            os = payload;
+        }
         
         AbstractHessianOutput out = _factory.getHessianOutput(os);
         
