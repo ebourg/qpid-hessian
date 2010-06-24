@@ -161,66 +161,71 @@ public class AMQPHessianProxy implements InvocationHandler
         }
     }
 
-    private Session openSession() throws IOException {
+    private Session openSession() throws IOException
+    {
         Connection conn = _factory.openConnection(null);
-        
+
         Session session = conn.createSession(0);
         session.setAutoSync(true);
-                
+
         return session;
     }
 
     private Future<MessageTransfer> sendRequest(Session session, Method method, Object[] args) throws IOException
     {
         String replyQueue = "temp." + UUID.randomUUID();
-        
+
         String requestQueue = method.getDeclaringClass().getSimpleName();
-        if (_factory.getQueuePrefix() != null) {
+        if (_factory.getQueuePrefix() != null)
+        {
             requestQueue = _factory.getQueuePrefix() + "." + requestQueue;
         }
-        
+
         session.queueDeclare(replyQueue, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
         session.exchangeBind(replyQueue, "amq.direct", replyQueue, null);
         session.messageSubscribe(replyQueue, replyQueue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null);
-        
+
         // issue credits
         session.messageFlow(replyQueue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT);
         session.messageFlow(replyQueue, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT);
-        
+
         session.sync();
-        
-        
+
+
         org.apache.qpid.transport.Future<QueueQueryResult> future = session.queueQuery(requestQueue);
         QueueQueryResult result = future.get();
-        
-        if (!result.hasQueue()) {
+
+        if (!result.hasQueue())
+        {
             throw new HessianRuntimeException("Service queue not found: " + requestQueue);
         }
-        
+
         ResponseListener listener = new ResponseListener();
         session.setSessionListener(listener);
-        
+
         byte[] payload = createRequestBody(method, args);
 
         DeliveryProperties deliveryProps = new DeliveryProperties();
         deliveryProps.setRoutingKey(requestQueue);
-        
+
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setReplyTo(new ReplyTo("amq.direct", replyQueue));
         messageProperties.setContentType("application/x-hessian");
-        if (_factory.isCompressed()) {
+        if (_factory.isCompressed())
+        {
             messageProperties.setContentEncoding("deflate");
         }
-        
+
         session.messageTransfer("amq.direct", MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, new Header(deliveryProps, messageProperties), payload);
         session.sync();
 
         return listener.getResponse();
     }
-    
-    private static class ResponseListener implements SessionListener {
+
+    private static class ResponseListener implements SessionListener
+    {
         boolean done = false;
-        
+
         private AsyncResponse<MessageTransfer> response = new AsyncResponse<MessageTransfer>();
 
         public Future<MessageTransfer> getResponse()
@@ -232,18 +237,20 @@ public class AMQPHessianProxy implements InvocationHandler
         public void resumed(Session session) { }
         public void exception(Session session, SessionException exception) { }
         public void closed(Session session) { }
-        
+
         public void message(Session session, MessageTransfer xfr)
         {
-            if (!response.isDone()) {
+            if (!response.isDone())
+            {
                 session.setSessionListener(null);
                 response.set(xfr);
                 done = true;
             }
         }
     }
-    
-    private byte[] createRequestBody(Method method, Object[] args) throws IOException {
+
+    private byte[] createRequestBody(Method method, Object[] args) throws IOException
+    {
         String methodName = method.getName();
         
         if (_factory.isOverloadEnabled() && args != null && args.length > 0)
@@ -253,10 +260,13 @@ public class AMQPHessianProxy implements InvocationHandler
         
         ByteArrayOutputStream payload = new ByteArrayOutputStream(256);
         OutputStream os;
-        if (_factory.isCompressed()) {
+        if (_factory.isCompressed())
+        {
             Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
             os = new DeflaterOutputStream(payload, deflater);
-        } else {
+        }
+        else
+        {
             os = payload;
         }
         

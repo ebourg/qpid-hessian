@@ -297,26 +297,31 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
         try
         {
             URI uri = new URI(urlName);
-            
+
             hostname = uri.getHost();
-            if (uri.getPort() != -1) {
+            if (uri.getPort() != -1)
+            {
                 port = uri.getPort();
             }
-            
+
             String userinfo = uri.getUserInfo();
-            if (userinfo != null) {
+            if (userinfo != null)
+            {
                 String[] parts = userinfo.split(":");
                 user = parts[0];
-                if (parts.length > 0) {
+                if (parts.length > 0)
+                {
                     password = parts[1];
                 }
             }
 
             Pattern pattern = Pattern.compile("/([^/]+)(/(.*))?");
             Matcher matcher = pattern.matcher(uri.getPath());
-            if (matcher.matches()) {
+            if (matcher.matches())
+            {
                 virtualhost = matcher.group(1);
-                if (matcher.groupCount() > 1) {
+                if (matcher.groupCount() > 1)
+                {
                     queuePrefix = matcher.group(3);
                 }
             }

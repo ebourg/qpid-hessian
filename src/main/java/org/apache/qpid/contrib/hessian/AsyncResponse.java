@@ -49,7 +49,8 @@ class AsyncResponse<T> implements Future<T>
 
     public void set(T t)
     {
-        if (!done) {
+        if (!done)
+        {
             result = t;
             done = true;
             latch.countDown();
@@ -64,9 +65,12 @@ class AsyncResponse<T> implements Future<T>
 
     public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
-        if (latch.await(timeout, unit)) {
+        if (latch.await(timeout, unit))
+        {
             return result;
-        } else {
+        }
+        else
+        {
             throw new TimeoutException("No response after " + timeout + " " + unit.toString().toLowerCase());
         }
     }

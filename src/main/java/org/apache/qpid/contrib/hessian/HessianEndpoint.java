@@ -119,11 +119,13 @@ public class HessianEndpoint
      * 
      * @param session
      */
-    private void createRequestQueue(Session session) {
+    private void createRequestQueue(Session session)
+    {
         String requestQueue = findRemoteAPI(getClass()).getSimpleName();
-        if (queuePrefix != null) {
+        if (queuePrefix != null)
+        {
             requestQueue = queuePrefix + "." + requestQueue;
-        }        
+        }
         
         session.queueDeclare(requestQueue, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
         session.exchangeBind(requestQueue, "amq.direct", requestQueue, null);
@@ -167,8 +169,9 @@ public class HessianEndpoint
                     }
                 }.start();
             }
-            
-            private void sendReponse(Session session, MessageTransfer xfr) throws IOException {
+
+            private void sendReponse(Session session, MessageTransfer xfr) throws IOException
+            {
                 MessageProperties props = xfr.getHeader().get(MessageProperties.class);
                 ReplyTo from = props.getReplyTo();
                 boolean compressed = "deflate".equals(props.getContentEncoding());
@@ -199,16 +202,20 @@ public class HessianEndpoint
         try
         {
             InputStream in = new ByteArrayInputStream(request);
-            if (compressed) {
+            if (compressed)
+            {
                 in = new InflaterInputStream(new ByteArrayInputStream(request), new Inflater(true));
             }
             
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
             OutputStream out;
-            if (compressed) {
+            if (compressed)
+            {
                 Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
                 out = new DeflaterOutputStream(bout, deflater);
-            } else {
+            }
+            else
+            {
                 out = bout;
             }
             
@@ -220,7 +227,7 @@ public class HessianEndpoint
             }
             out.flush();
             out.close();
-            
+
             return bout.toByteArray();
         }
         catch (RuntimeException e)

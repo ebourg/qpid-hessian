@@ -40,31 +40,33 @@ public class AMQPHessianProxyTest extends TestCase
         connection.close();
     }
 
-    public void testEcho() throws Exception {
+    public void testEcho() throws Exception
+    {
         EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
         endpoint.run(connection);
-        
+
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
-        
+
         EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
         String message = "Hello Hessian!";
-        
+
         assertEquals(message, service.echo(message));
         assertEquals(message, service.echo(message));
     }
 
-    public void testException() throws Exception {
+    public void testException() throws Exception
+    {
         EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
         endpoint.run(connection);
-        
+
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
         factory.setCompressed(true);
-        
+
         EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
         String message = "Hello Hessian!";
-        
+
         try
         {
             service.exception(message);
