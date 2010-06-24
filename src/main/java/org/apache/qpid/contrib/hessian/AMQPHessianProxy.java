@@ -173,25 +173,8 @@ public class AMQPHessianProxy implements InvocationHandler
 
     private Future<MessageTransfer> sendRequest(Session session, Method method, Object[] args) throws IOException
     {
-        String replyQueue = "temp." + UUID.randomUUID();
-
-        String requestQueue = method.getDeclaringClass().getSimpleName();
-        if (_factory.getQueuePrefix() != null)
-        {
-            requestQueue = _factory.getQueuePrefix() + "." + requestQueue;
-        }
-
-        session.queueDeclare(replyQueue, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
-        session.exchangeBind(replyQueue, "amq.direct", replyQueue, null);
-        session.messageSubscribe(replyQueue, replyQueue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null);
-
-        // issue credits
-        session.messageFlow(replyQueue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT);
-        session.messageFlow(replyQueue, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT);
-
-        session.sync();
-
-
+        // check if the request queue exists
+        String requestQueue = getRequestQueue(method.getDeclaringClass());
         org.apache.qpid.transport.Future<QueueQueryResult> future = session.queueQuery(requestQueue);
         QueueQueryResult result = future.get();
 
@@ -199,6 +182,10 @@ public class AMQPHessianProxy implements InvocationHandler
         {
             throw new HessianRuntimeException("Service queue not found: " + requestQueue);
         }
+        
+        // create the temporary queue for the response
+        String replyQueue = "temp." + UUID.randomUUID();
+        createQueue(session, replyQueue);
 
         ResponseListener listener = new ResponseListener();
         session.setSessionListener(listener);
@@ -220,6 +207,39 @@ public class AMQPHessianProxy implements InvocationHandler
         session.sync();
 
         return listener.getResponse();
+    }
+
+    /**
+     * Return the name of the request queue for the service.
+     */
+    private String getRequestQueue(Class cls)
+    {
+        String requestQueue = cls.getSimpleName();
+        if (_factory.getQueuePrefix() != null)
+        {
+            requestQueue = _factory.getQueuePrefix() + "." + requestQueue;
+        }
+        
+        return requestQueue;
+    }
+
+    /**
+     * Create an exclusive queue.
+     * 
+     * @param session
+     * @param name    the name of the queue
+     */
+    private void createQueue(Session session, String name)
+    {
+        session.queueDeclare(name, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
+        session.exchangeBind(name, "amq.direct", name, null);
+        session.messageSubscribe(name, name, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null);
+
+        // issue credits
+        session.messageFlow(name, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT);
+        session.messageFlow(name, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT);
+
+        session.sync();
     }
 
     private static class ResponseListener implements SessionListener

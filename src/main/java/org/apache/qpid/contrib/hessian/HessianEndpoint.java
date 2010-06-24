@@ -114,35 +114,45 @@ public class HessianEndpoint
     }
 
     /**
-     * Creates the queue receiving the requests. The queue name is based on the
-     * class of the API implemented.
-     * 
-     * @param session
+     * Return the name of the request queue for the service.
+     * The queue name is based on the class of the API implemented.
      */
-    private void createRequestQueue(Session session)
+    private String getRequestQueue(Class cls)
     {
-        String requestQueue = findRemoteAPI(getClass()).getSimpleName();
+        String requestQueue = cls.getSimpleName();
         if (queuePrefix != null)
         {
             requestQueue = queuePrefix + "." + requestQueue;
         }
         
-        session.queueDeclare(requestQueue, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
-        session.exchangeBind(requestQueue, "amq.direct", requestQueue, null);
-        session.messageSubscribe(requestQueue, requestQueue, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null);
+        return requestQueue;
+    }
+
+    /**
+     * Create an exclusive queue.
+     * 
+     * @param session
+     * @param name    the name of the queue
+     */
+    private void createQueue(Session session, String name)
+    {       
+        session.queueDeclare(name, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
+        session.exchangeBind(name, "amq.direct", name, null);
+        session.messageSubscribe(name, name, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null);
         
         // issue credits
-        session.messageFlow(requestQueue, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT);
-        session.messageFlow(requestQueue, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT);
+        session.messageFlow(name, MessageCreditUnit.BYTE, Session.UNLIMITED_CREDIT);
+        session.messageFlow(name, MessageCreditUnit.MESSAGE, Session.UNLIMITED_CREDIT);
         
         session.sync();
     }
-    
+
     public void run(Connection conn)
     {
-        final Session session = conn.createSession(0);
+        Session session = conn.createSession(0);
         
-        createRequestQueue(session);
+        // create the queue receiving the requests 
+        createQueue(session, getRequestQueue(findRemoteAPI(getClass())));
         
         session.setSessionListener(new SessionListener()
         {
