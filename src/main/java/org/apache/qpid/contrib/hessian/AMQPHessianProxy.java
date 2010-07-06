@@ -171,6 +171,19 @@ public class AMQPHessianProxy implements InvocationHandler
         return session;
     }
 
+    /**
+     * Check if the specified queue exists.
+     * 
+     * @param session
+     * @param name
+     */
+    private boolean checkQueue(Session session, String name)
+    {
+        org.apache.qpid.transport.Future<QueueQueryResult> future = session.queueQuery(name);
+        QueueQueryResult result = future.get();
+        return result.hasQueue();
+    }
+
     private Future<MessageTransfer> sendRequest(Session session, Method method, Object[] args) throws IOException
     {
         // check if the request queue exists
@@ -178,7 +191,7 @@ public class AMQPHessianProxy implements InvocationHandler
         org.apache.qpid.transport.Future<QueueQueryResult> future = session.queueQuery(requestQueue);
         QueueQueryResult result = future.get();
 
-        if (!result.hasQueue())
+        if (!checkQueue(session, getRequestQueue(method.getDeclaringClass())))
         {
             throw new HessianRuntimeException("Service queue not found: " + requestQueue);
         }
@@ -186,9 +199,6 @@ public class AMQPHessianProxy implements InvocationHandler
         // create the temporary queue for the response
         String replyQueue = "temp." + UUID.randomUUID();
         createQueue(session, replyQueue);
-
-        ResponseListener listener = new ResponseListener();
-        session.setSessionListener(listener);
 
         byte[] payload = createRequestBody(method, args);
 
@@ -203,6 +213,9 @@ public class AMQPHessianProxy implements InvocationHandler
             messageProperties.setContentEncoding("deflate");
         }
 
+        ResponseListener listener = new ResponseListener();
+        session.setSessionListener(listener);
+        
         session.messageTransfer("amq.direct", MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, new Header(deliveryProps, messageProperties), payload);
         session.sync();
 
