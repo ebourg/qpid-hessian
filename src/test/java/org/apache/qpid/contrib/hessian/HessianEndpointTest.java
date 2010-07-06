@@ -17,20 +17,14 @@
 package org.apache.qpid.contrib.hessian;
 
 /**
- * Service implementation as a subclass of HessianEndpoint.
- * 
  * @author Emmanuel Bourg
  * @version $Revision$, $Date$
  */
-public class EchoServiceEndpoint extends HessianEndpoint implements EchoService
+public class HessianEndpointTest extends AMQPHessianProxyTest
 {
-    public String echo(String message)
+    protected void startEndpoint()
     {
-        return message;
-    }
-
-    public void exception(String message) throws Exception
-    {
-        throw new Exception(message);
+        HessianEndpoint endpoint = new HessianEndpoint(new EchoServiceImpl());
+        endpoint.run(connection);
     }
 }

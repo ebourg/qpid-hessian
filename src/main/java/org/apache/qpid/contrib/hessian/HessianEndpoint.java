@@ -52,14 +52,34 @@ import org.apache.qpid.transport.SessionListener;
  */
 public class HessianEndpoint
 {
-    private HessianSkeleton skeleton;
+    private Class serviceAPI;
+    private Object serviceImpl;
     private SerializerFactory serializerFactory;
     private String queuePrefix;
 
     public HessianEndpoint()
     {
         // Initialize the service
-        skeleton = new HessianSkeleton(this, findRemoteAPI(getClass()));
+        setServiceAPI(findRemoteAPI(getClass()));
+        setServiceImpl(this);
+    }
+
+    public HessianEndpoint(Object serviceImpl)
+    {
+        // Initialize the service
+        setServiceAPI(findRemoteAPI(serviceImpl.getClass()));
+        setServiceImpl(serviceImpl);
+    }
+
+    public void setServiceAPI(Class serviceAPI)
+    {
+        this.serviceAPI = serviceAPI;
+    }
+
+    public void setServiceImpl(Object serviceImpl)
+    {
+        this.serviceImpl = serviceImpl;
+        
     }
 
     /**
@@ -103,6 +123,11 @@ public class HessianEndpoint
 
     private Class findRemoteAPI(Class implClass)
     {
+        if (implClass == null)
+        {
+            return null;
+        }
+        
         Class[] interfaces = implClass.getInterfaces();
 
         if (interfaces.length == 1)
@@ -152,7 +177,7 @@ public class HessianEndpoint
         Session session = conn.createSession(0);
         
         // create the queue receiving the requests 
-        createQueue(session, getRequestQueue(findRemoteAPI(getClass())));
+        createQueue(session, getRequestQueue(serviceAPI));
         
         session.setSessionListener(new SessionListener()
         {
@@ -229,8 +254,9 @@ public class HessianEndpoint
                 out = bout;
             }
             
+            HessianSkeleton skeleton = new HessianSkeleton(serviceImpl, serviceAPI);
             skeleton.invoke(in, out, getSerializerFactory());
-
+            
             if (out instanceof DeflaterOutputStream)
             {
                 ((DeflaterOutputStream) out).finish();

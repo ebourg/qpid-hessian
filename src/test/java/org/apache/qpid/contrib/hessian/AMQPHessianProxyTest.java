@@ -27,7 +27,7 @@ public class AMQPHessianProxyTest extends TestCase
 {
     private String HOSTNAME = "localhost";
 
-    private Connection connection;
+    protected Connection connection;
 
     protected void setUp() throws Exception
     {
@@ -40,11 +40,16 @@ public class AMQPHessianProxyTest extends TestCase
         connection.close();
     }
 
-    public void testEcho() throws Exception
+    protected void startEndpoint()
     {
         EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
         endpoint.run(connection);
+    }
 
+    public void testEcho() throws Exception
+    {
+        startEndpoint();
+        
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
 
@@ -57,9 +62,8 @@ public class AMQPHessianProxyTest extends TestCase
 
     public void testException() throws Exception
     {
-        EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
-        endpoint.run(connection);
-
+        startEndpoint();
+        
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
         factory.setCompressed(true);
@@ -71,6 +75,10 @@ public class AMQPHessianProxyTest extends TestCase
         {
             service.exception(message);
             fail("No exception thrown");
+        }
+        catch (RuntimeException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {

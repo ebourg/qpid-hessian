@@ -17,12 +17,12 @@
 package org.apache.qpid.contrib.hessian;
 
 /**
- * Service implementation as a subclass of HessianEndpoint.
+ * Service implementation as a POJO.
  * 
  * @author Emmanuel Bourg
  * @version $Revision$, $Date$
  */
-public class EchoServiceEndpoint extends HessianEndpoint implements EchoService
+public class EchoServiceImpl implements EchoService
 {
     public String echo(String message)
     {

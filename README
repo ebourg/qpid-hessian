@@ -13,20 +13,19 @@ to Hessian services over HTTP:
     }
 
 
-2. Implement the interface and extend the HessianEndpoint class
-   (this is the equivalent of the HessianServlet):
+2. Implement the interface:
 
-    public class EchoServiceEndpoint extends HessianEndpoint implements EchoService {
-
-    public String echo(String message) {
-        return message;
+    public class EchoServiceImpl implements EchoService {
+    
+        public String echo(String message) {
+            return message;
+        }
     }
-}
 
 
-3. Deploy the endpoint by attaching it to a Qpid connection:
+3. Deploy an endpoint for the service and attach it to an AMQP connection:
 
-    EchoServiceEndpoint endpoint = new EchoServiceEndpoint();
+    HessianEndpoint endpoint = new HessianEndpoint(new EchoServiceImpl());
     endpoint.run(connection);
 
 
@@ -51,12 +50,12 @@ Importing Hessian AMQP into your Maven project
     <repository>
       <id>ebourg</id>
       <name>ebourg</name>
-      <url>http://people.apache.org/~ebourg/qpid/maven</url>
+      <url>http://people.apache.org/~ebourg/qpid/maven </url>
     </repository>
     <repository>
       <id>caucho</id>
       <name>caucho</name>
-      <url>http://caucho.com/m2</url>
+      <url>http://caucho.com/m2 </url>
     </repository>
   </repositories>
 
