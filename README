@@ -65,6 +65,6 @@ Importing Hessian AMQP into your Maven project
   <dependency>
     <groupId>org.apache.qpid</groupId>
     <artifactId>qpid-hessian</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </dependency>
 
