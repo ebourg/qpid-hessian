@@ -217,7 +217,7 @@ public class HessianEndpoint
                 byte[] response = createResponseBody(xfr.getBodyBytes(), compressed);
 
                 MessageProperties messageProperties = new MessageProperties();
-                messageProperties.setContentType("application/x-hessian");
+                messageProperties.setContentType("x-application/hessian");
                 if (compressed)
                 {
                     messageProperties.setContentEncoding("deflate");

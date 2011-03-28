@@ -207,7 +207,7 @@ public class AMQPHessianProxy implements InvocationHandler
 
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setReplyTo(new ReplyTo("amq.direct", replyQueue));
-        messageProperties.setContentType("application/x-hessian");
+        messageProperties.setContentType("x-application/hessian");
         if (_factory.isCompressed())
         {
             messageProperties.setContentEncoding("deflate");
