@@ -4,7 +4,7 @@
   <groupId>org.apache.qpid</groupId>
   <artifactId>qpid-hessian</artifactId>
   <name>Hessian AMQP</name>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.11-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <description>
@@ -49,7 +49,7 @@
     <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-client</artifactId>
-      <version>0.9-SNAPSHOT</version>
+      <version>0.11-SNAPSHOT</version>
     </dependency>
 
     <dependency>
