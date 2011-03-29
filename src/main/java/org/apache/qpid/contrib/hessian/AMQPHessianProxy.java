@@ -279,6 +279,8 @@ public class AMQPHessianProxy implements InvocationHandler
                 response.set(xfr);
                 done = true;
             }
+            
+            session.processed(xfr);
         }
     }
 

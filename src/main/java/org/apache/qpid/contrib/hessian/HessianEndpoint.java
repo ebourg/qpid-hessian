@@ -201,6 +201,10 @@ public class HessianEndpoint
                         {
                             e.printStackTrace();
                         }
+                        finally
+                        {
+                            session.processed(xfr);
+                        }
                     }
                 }.start();
             }
