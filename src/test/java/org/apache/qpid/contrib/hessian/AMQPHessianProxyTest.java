@@ -17,12 +17,10 @@
 package org.apache.qpid.contrib.hessian;
 
 import junit.framework.TestCase;
+import org.apache.qpid.contrib.hessian.service.EchoService;
+import org.apache.qpid.contrib.hessian.service.EchoServiceEndpoint;
 import org.apache.qpid.transport.Connection;
 
-/**
- * @author Emmanuel Bourg
- * @version $Revision$, $Date$
- */
 public class AMQPHessianProxyTest extends TestCase
 {
     private String HOSTNAME = "localhost";

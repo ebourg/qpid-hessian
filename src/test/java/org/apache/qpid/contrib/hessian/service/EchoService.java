@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.apache.qpid.contrib.hessian;
+package org.apache.qpid.contrib.hessian.service;
 
-import org.apache.qpid.contrib.hessian.service.EchoServiceImpl;
-
-public class HessianEndpointTest extends AMQPHessianProxyTest
+/**
+ * Echo service interface.
+ * 
+ * @author Emmanuel Bourg
+ */
+public interface EchoService
 {
-    protected void startEndpoint()
-    {
-        HessianEndpoint endpoint = new HessianEndpoint(new EchoServiceImpl());
-        endpoint.run(connection);
-    }
+    String echo(String message);
+    
+    void exception(String message) throws Exception;
 }
