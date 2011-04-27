@@ -24,7 +24,6 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * @author Emmanuel Bourg
- * @version $Revision$, $Date$
  */
 class AsyncResponse<T> implements Future<T>
 {

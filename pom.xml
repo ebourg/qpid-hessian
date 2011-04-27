@@ -8,9 +8,27 @@
   <packaging>jar</packaging>
 
   <description>
-    Hessian over AMQP
+    Hessian AMQP is a component helping the deployment of Hessian services using
+    an AMQP server as the underlying transport.
   </description>
   <url>http://github.com/ebourg/qpid-hessian</url>
+  <inceptionYear>2010</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Emmanuel Bourg</name>
+      <email>ebourg@apache.org</email>
+      <timezone>Europe/Paris</timezone>
+    </developer>
+  </developers>
 
   <distributionManagement>
     <repository>
@@ -82,5 +100,22 @@
       </extension>
     </extensions>
   </build>
+  
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration> 
+          <quiet>true</quiet>
+          <linksource>true</linksource>
+          <links>
+            <link>http://java.sun.com/javase/6/docs/api/</link>
+            <link>http://www.caucho.com/resin-4.0-javadoc/</link>
+          </links>
+        </configuration> 
+      </plugin>
+    </plugins>
+  </reporting>
   
 </project>

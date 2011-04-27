@@ -41,14 +41,14 @@ import com.caucho.services.client.ServiceProxyFactory;
 import org.apache.qpid.transport.Connection;
 
 /**
- * Factory for creating Hessian client stubs.  The returned stub will
+ * Factory for creating Hessian client stubs. The returned stub will
  * call the remote object for all methods.
  *
  * <pre>
  * HelloHome hello = (HelloHome) factory.create(HelloHome.class, null);
  * </pre>
  *
- * After creation, the stub can be like a regular Java class.  Because
+ * After creation, the stub can be like a regular Java class. Because
  * it makes remote calls, it can throw more exceptions than a Java class.
  * In particular, it may throw protocol exceptions.
  * 
@@ -107,7 +107,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
     }
 
     /**
-     * Sets the user.
+     * Sets the user connecting to the AMQP server.
      */
     public void setUser(String user)
     {
@@ -115,25 +115,31 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
     }
 
     /**
-     * Sets the password.
+     * Sets the password of the user connecting to the AMQP server.
      */
     public void setPassword(String password)
     {
         this.password = password;
     }
 
+    /**
+     * Returns the prefix of the queue that receives the hessian requests.
+     */
     public String getQueuePrefix()
     {
         return queuePrefix;
     }
 
+    /**
+     * Sets the prefix of the queue that receives the hessian requests.
+     */
     public void setQueuePrefix(String queuePrefix)
     {
         this.queuePrefix = queuePrefix;
     }
 
     /**
-     * Sets the debug
+     * Sets the debug mode.
      */
     public void setDebug(boolean isDebug)
     {
@@ -141,7 +147,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
     }
 
     /**
-     * Gets the debug
+     * Gets the debug mode.
      */
     public boolean isDebug()
     {
@@ -165,7 +171,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
     }
 
     /**
-     * The socket timeout on requests in milliseconds.
+     * Returns the socket timeout on requests in milliseconds.
      */
     public long getReadTimeout()
     {
@@ -173,28 +179,40 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
     }
 
     /**
-     * The socket timeout on requests in milliseconds.
+     * Sets the socket timeout on requests in milliseconds.
      */
     public void setReadTimeout(long timeout)
     {
         readTimeout = timeout;
     }
 
+    /**
+     * Returns the socket timeout on connect in milliseconds.
+     */
     public long getConnectTimeout()
     {
         return connectTimeout;
     }
 
+    /**
+     * Sets the socket timeout on connect in milliseconds.
+     */
     public void setConnectTimeout(long _connecTimeout)
     {
         this.connectTimeout = _connecTimeout;
     }
 
+    /**
+     * Indicates if the requests/responses should be compressed.
+     */
     public boolean isCompressed()
     {
         return compressed;
     }
 
+    /**
+     * Specifies if the requests/responses should be compressed.
+     */
     public void setCompressed(boolean compressed) 
     {
         this.compressed = compressed;
@@ -266,7 +284,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
      * is a proxy with the interface specified by api.
      *
      * <pre>
-     * String url = "http://localhost:8080/ejb/hello");
+     * String url = "amqp://user:password@localhost:5672/vhost/queue");
      * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);
      * </pre>
      *
@@ -336,12 +354,12 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
         return Proxy.newProxyInstance(loader, new Class[]{api}, handler);
     }
 
-    public AbstractHessianInput getHessianInput(InputStream is)
+    AbstractHessianInput getHessianInput(InputStream is)
     {
         return getHessian2Input(is);
     }
 
-    public AbstractHessianInput getHessian1Input(InputStream is)
+    AbstractHessianInput getHessian1Input(InputStream is)
     {
         AbstractHessianInput in;
 
@@ -359,7 +377,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
         return in;
     }
 
-    public AbstractHessianInput getHessian2Input(InputStream is)
+    AbstractHessianInput getHessian2Input(InputStream is)
     {
         AbstractHessianInput in;
 
@@ -377,7 +395,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
         return in;
     }
 
-    public AbstractHessianOutput getHessianOutput(OutputStream os)
+    AbstractHessianOutput getHessianOutput(OutputStream os)
     {
         AbstractHessianOutput out;
 

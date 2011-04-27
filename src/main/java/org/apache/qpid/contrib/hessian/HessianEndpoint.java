@@ -48,15 +48,19 @@ import org.apache.qpid.transport.SessionListener;
  * This class is derived from {@link com.caucho.hessian.server.HessianServlet}. 
  * 
  * @author Emmanuel Bourg
- * @version $Revision$, $Date$
  */
 public class HessianEndpoint
 {
     private Class serviceAPI;
     private Object serviceImpl;
     private SerializerFactory serializerFactory;
+
+    /** The prefix of the queue created to receive the hessian requests */
     private String queuePrefix;
 
+    /**
+     * Creates an hessian endpoint.
+     */
     public HessianEndpoint()
     {
         // Initialize the service
@@ -64,6 +68,11 @@ public class HessianEndpoint
         setServiceImpl(this);
     }
 
+    /**
+     * Creates an hessian endpoint for the specified service.
+     * 
+     * @param serviceImpl The remote object to be exposed by the endpoint
+     */
     public HessianEndpoint(Object serviceImpl)
     {
         // Initialize the service
@@ -71,11 +80,17 @@ public class HessianEndpoint
         setServiceImpl(serviceImpl);
     }
 
+    /**
+     * Specifies the interface of the service.
+     */
     public void setServiceAPI(Class serviceAPI)
     {
         this.serviceAPI = serviceAPI;
     }
 
+    /**
+     * Specifies the object implementing the service.
+     */
     public void setServiceImpl(Object serviceImpl)
     {
         this.serviceImpl = serviceImpl;
@@ -103,11 +118,17 @@ public class HessianEndpoint
         return serializerFactory;
     }
 
+    /**
+     * Returns the prefix of the queue created to receive the hessian requests.
+     */
     public String getQueuePrefix()
     {
         return queuePrefix;
     }
 
+    /**
+     * Sets the prefix of the queue created to receive the hessian requests.
+     */
     public void setQueuePrefix(String prefix)
     {
         queuePrefix = prefix;
@@ -172,7 +193,16 @@ public class HessianEndpoint
         session.sync();
     }
 
-    public void run(Connection conn)
+    /**
+     * Starts the endpoint on the connection specified. A session bound to a
+     * dedicated queue is created on the connection and a listener is installed
+     * to respond to hessian requests. The endpoint is stopped by closing the
+     * session returned.
+     * 
+     * @param conn The AMQP connection
+     * @return the AMQP session handling the requests for the endpoint
+     */
+    public Session run(Connection conn)
     {
         Session session = conn.createSession(0);
         
@@ -189,7 +219,7 @@ public class HessianEndpoint
             public void message(final Session session, final MessageTransfer xfr)
             {
                 // send the response in a separate thread, otherwise the call to session.messageTransfer() blocks
-                new Thread()
+                new Thread("Hessian/AMQP Responder [" + getRequestQueue(serviceAPI) + "]")
                 {
                     public void run()
                     {
@@ -231,12 +261,14 @@ public class HessianEndpoint
                 session.sync();
             }
         });
+        
+        return session;
     }
 
     /**
      * Execute a request.
      */
-    public byte[] createResponseBody(byte[] request, boolean compressed) throws IOException
+    private byte[] createResponseBody(byte[] request, boolean compressed) throws IOException
     {
         try
         {

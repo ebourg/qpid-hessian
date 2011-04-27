@@ -53,8 +53,8 @@ import org.apache.qpid.transport.SessionException;
 import org.apache.qpid.transport.SessionListener;
 
 /**
- * Proxy implementation for Hessian clients.  Applications will generally
- * use AMQPHessianProxyFactory to create proxy clients.
+ * Proxy implementation for Hessian clients. Applications will generally
+ * use {@link AMQPHessianProxyFactory} to create proxy clients.
  * 
  * @author Emmanuel Bourg
  * @author Scott Ferguson
