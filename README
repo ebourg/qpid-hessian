@@ -44,14 +44,9 @@ to Hessian services over HTTP:
 Importing Hessian AMQP into your Maven project
 ----------------------------------------------
 
-1. Add these repositories to your project:
+1. Add the Caucho repository to your project:
 
   <repositories>
-    <repository>
-      <id>ebourg</id>
-      <name>ebourg</name>
-      <url>http://people.apache.org/~ebourg/qpid/maven </url>
-    </repository>
     <repository>
       <id>caucho</id>
       <name>caucho</name>
@@ -65,6 +60,6 @@ Importing Hessian AMQP into your Maven project
   <dependency>
     <groupId>org.apache.qpid</groupId>
     <artifactId>qpid-hessian</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>1.0</version>
   </dependency>
 
