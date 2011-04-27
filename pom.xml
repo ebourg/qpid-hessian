@@ -4,7 +4,7 @@
   <groupId>org.apache.qpid</groupId>
   <artifactId>qpid-hessian</artifactId>
   <name>Hessian AMQP</name>
-  <version>0.11-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>jar</packaging>
 
   <description>
@@ -22,19 +22,9 @@
 
   <repositories>
     <repository>
-      <id>java.net</id>
-      <name>java.net</name>
-      <url>http://download.java.net/maven/2/</url>
-    </repository>
-    <repository>
       <id>caucho</id>
       <name>caucho</name>
       <url>http://caucho.com/m2</url>
-    </repository>
-    <repository>
-      <id>ebourg</id>
-      <name>ebourg</name>
-      <url>http://people.apache.org/~ebourg/qpid/maven/</url>
     </repository>
   </repositories>
 
@@ -49,7 +39,7 @@
     <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>qpid-common</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>0.10</version>
     </dependency>
 
     <dependency>
@@ -67,11 +57,8 @@
     </dependency>
     
   </dependencies>
-    
-  <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <testSourceDirectory>src/test/java</testSourceDirectory>
 
+  <build>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -83,12 +70,6 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/Abstract*</exclude>
-          </excludes>
           <testFailureIgnore>true</testFailureIgnore>
         </configuration>
       </plugin>
