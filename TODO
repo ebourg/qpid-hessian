@@ -3,5 +3,4 @@ Hessian AMQP
 
 - service queue discovery
 - connection reuse by the proxy
-- stop() on the endpoint
 - support for connection pooling
