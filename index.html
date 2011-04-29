@@ -83,7 +83,7 @@ endpoint.run(connection);
 
 <pre>
 AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
-EchoService service = factory.create(EchoService.class, "qpid://guest:guest@localhost/test");
+EchoService service = factory.create(EchoService.class, "amqp://guest:guest@localhost/test");
 </pre>
 
 <p>5. The service is ready to be consumed!</p>
@@ -96,25 +96,11 @@ String echo = service.echo("Hello Hessian!");
 
 <h2>Install</h2>
     
-<p>In your Maven pom:</p>
-
-<p>1. Add the Caucho repository:</p>
-
-<pre>
-  &lt;repositories>
-    &lt;repository>
-      &lt;id>caucho&lt;/id>
-      &lt;name>caucho&lt;/name>
-      &lt;url>http://caucho.com/m2&lt;/url>
-    &lt;/repository>
-  &lt;/repositories>
-</pre>
-
-2. Declare the dependency:
+<p>Declare the dependency in your Maven pom:</p>
 
 <pre>
   &lt;dependency>
-    &lt;groupId>org.apache.qpid&lt;/groupId>
+    &lt;groupId>org.apache-extras.qpid&lt;/groupId>
     &lt;artifactId>qpid-hessian&lt;/artifactId>
     &lt;version>1.0&lt;/version>
   &lt;/dependency>
