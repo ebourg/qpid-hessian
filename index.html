@@ -3,7 +3,7 @@
 <head>
   <meta charset='utf-8'>
 
-  <title>ebourg/qpid-hessian @ GitHub</title>
+  <title>Hessian AMQP - Hessian Remote Procedure Call over AMQP</title>
 
   <style type="text/css">
     body {
@@ -83,7 +83,7 @@ endpoint.run(connection);
 
 <pre>
 AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
-EchoService service = factory.create(EchoService.class, "amqp://guest:guest@localhost/test");
+EchoService service = factory.create(EchoService.class, "amqp://user:pwd@example.com/test");
 </pre>
 
 <p>5. The service is ready to be consumed!</p>
@@ -91,7 +91,6 @@ EchoService service = factory.create(EchoService.class, "amqp://guest:guest@loca
 <pre>
 String echo = service.echo("Hello Hessian!");
 </pre>
-
 
 
 <h2>Install</h2>
@@ -110,7 +109,9 @@ String echo = service.echo("Hello Hessian!");
 
 <h2>Documentation</h2>
 
-<a href="apidocs/index.html">Hessian AMQP 1.0 Javadoc</a>
+<p><a href="apidocs/index.html">Hessian AMQP 1.0 Javadoc</a></p>
+
+<p><a href="https://github.com/ebourg/qpid-hessian/tree/master/src/test/java/org/apache/qpid/contrib/hessian/example">Code sample</a></p>
 
 
 <h2>License</h2>
@@ -119,7 +120,7 @@ String echo = service.echo("Hello Hessian!");
 
 <h2>Author</h2>
 
-<p>Emmanuel Bourg (ebourg@apache.org)<br/><br/>      </p>
+<p>Emmanuel Bourg (<a href="mailto:ebourg@apache.org">ebourg@apache.org</a>)<br/><br/>      </p>
 
 
 <h2>Download</h2>
