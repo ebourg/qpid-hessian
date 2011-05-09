@@ -83,4 +83,22 @@ public class AMQPHessianProxyTest extends TestCase
             assertEquals("Exception message", message, e.getMessage());
         }
     }
+
+    public void testResuming() throws Exception
+    {
+        startEndpoint();
+        
+        // close and reconnect to the same server
+        connection.close();
+        connection.connect(connection.getConnectionSettings());
+        connection.resume();
+        
+        AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+        factory.setReadTimeout(5000);
+
+        EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        String message = "Hello again Hessian!";
+
+        assertEquals(message, service.echo(message));
+    }
 }
