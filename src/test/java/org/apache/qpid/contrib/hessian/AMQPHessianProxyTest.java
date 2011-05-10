@@ -51,7 +51,7 @@ public class AMQPHessianProxyTest extends TestCase
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
 
-        EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
         String message = "Hello Hessian!";
 
         assertEquals(message, service.echo(message));
@@ -66,7 +66,7 @@ public class AMQPHessianProxyTest extends TestCase
         factory.setReadTimeout(5000);
         factory.setCompressed(true);
 
-        EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
         String message = "Hello Hessian!";
 
         try

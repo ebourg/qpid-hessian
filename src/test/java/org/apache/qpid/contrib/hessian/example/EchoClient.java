@@ -27,7 +27,7 @@ public class EchoClient {
 
     public static void main(String[] args) throws Exception {
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
-        EchoService service = (EchoService) factory.create(EchoService.class, "amqp://username:password@amqp.example.com/test");
+        EchoService service = factory.create(EchoService.class, "amqp://username:password@amqp.example.com/test");
 
         System.out.println(service.echo("Hello AMQP!"));
     }

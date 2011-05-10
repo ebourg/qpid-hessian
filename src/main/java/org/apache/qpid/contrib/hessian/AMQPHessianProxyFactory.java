@@ -57,7 +57,7 @@ import org.apache.qpid.transport.Connection;
  * @author Emmanuel Bourg
  * @author Scott Ferguson
  */
-public class AMQPHessianProxyFactory implements ServiceProxyFactory
+public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/
 {
     private SerializerFactory _serializerFactory;
     private HessianRemoteResolver _resolver;
@@ -95,7 +95,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
 
                 try
                 {
-                    Class api = Class.forName(type, false, loader);
+                    Class<?> api = Class.forName(type, false, loader);
                     return create(api, url);
                 }
                 catch (Exception e)
@@ -292,7 +292,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
      * @param urlName the URL where the client object is located.
      * @return a proxy to the object with the specified interface.
      */
-    public Object create(Class api, String urlName) throws MalformedURLException
+    public <T> T create(Class<T> api, String urlName) throws MalformedURLException
     {
         return create(api, urlName, api.getClassLoader());
     }
@@ -310,7 +310,8 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
      * @param urlName the URL where the client object is located.
      * @return a proxy to the object with the specified interface.
      */
-    public Object create(Class api, String urlName, ClassLoader loader) throws MalformedURLException
+    @SuppressWarnings("unchecked")
+    public <T> T create(Class<T> api, String urlName, ClassLoader loader) throws MalformedURLException
     {
         try
         {
@@ -351,7 +352,7 @@ public class AMQPHessianProxyFactory implements ServiceProxyFactory
         
         AMQPHessianProxy handler = new AMQPHessianProxy(this);
 
-        return Proxy.newProxyInstance(loader, new Class[]{api}, handler);
+        return (T) Proxy.newProxyInstance(loader, new Class[]{api}, handler);
     }
 
     AbstractHessianInput getHessianInput(InputStream is)
