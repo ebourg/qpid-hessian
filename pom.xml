@@ -9,7 +9,7 @@
   <groupId>org.apache-extras.qpid</groupId>
   <artifactId>qpid-hessian</artifactId>
   <name>Hessian AMQP</name>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <description>
@@ -41,6 +41,14 @@
     </developer>
   </developers>
 
+  <repositories>
+    <repository>
+      <id>psmith</id>
+      <name>psmith</name>
+      <url>http://people.apache.org/~psmith/logging.apache.org/repo</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     
     <dependency>
@@ -61,12 +69,46 @@
       <version>1.6.1</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.2</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging</groupId>
+      <artifactId>apache-jul-log4j-bridge</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>apache-log4j-component</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.16</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.jms</groupId>
+          <artifactId>jms</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jdmk</groupId>
+          <artifactId>jmxtools</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jmx</groupId>
+          <artifactId>jmxri</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
   </dependencies>
@@ -84,6 +126,16 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <testFailureIgnore>true</testFailureIgnore>
+          <systemProperties>
+            <property>
+              <name>java.util.logging.manager</name>
+              <value>org.apache.logging.julbridge.JULBridgeLogManager</value>
+            </property>
+            <property>
+              <name>log4j.configuration</name>
+              <value>log4j.properties</value>
+            </property>
+          </systemProperties>
         </configuration>
       </plugin>
     </plugins>

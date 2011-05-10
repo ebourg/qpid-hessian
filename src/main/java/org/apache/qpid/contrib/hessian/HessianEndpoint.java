@@ -212,10 +212,21 @@ public class HessianEndpoint
         session.setSessionListener(new SessionListener()
         {
             public void opened(Session session) {}
-            public void resumed(Session session) {}
             public void exception(Session session, SessionException exception) {}
             public void closed(Session session) {}
-            
+
+            public void resumed(final Session session)
+            {
+                new Thread("Hessian/AMQP Resume Handler [" + getRequestQueue(serviceAPI) + "]")
+                {
+                    public void run()
+                    {
+                        // recreate the queue
+                        createQueue(session, getRequestQueue(serviceAPI));
+                    }
+                }.start();
+            }
+
             public void message(final Session session, final MessageTransfer xfr)
             {
                 // send the response in a separate thread, otherwise the call to session.messageTransfer() blocks
