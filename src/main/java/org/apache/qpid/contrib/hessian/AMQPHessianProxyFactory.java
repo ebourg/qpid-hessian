@@ -37,7 +37,6 @@ import com.caucho.hessian.io.HessianInput;
 import com.caucho.hessian.io.HessianOutput;
 import com.caucho.hessian.io.HessianRemoteResolver;
 import com.caucho.hessian.io.SerializerFactory;
-import com.caucho.services.client.ServiceProxyFactory;
 import org.apache.qpid.transport.Connection;
 
 /**
