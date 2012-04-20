@@ -22,11 +22,10 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.caucho.hessian.io.AbstractHessianInput;
 import com.caucho.hessian.io.AbstractHessianOutput;
@@ -66,6 +65,7 @@ public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/
     private String hostname;
     private String virtualhost;
     private int port = 5672;
+    private boolean ssl = false;
     
     private String queuePrefix;
 
@@ -270,10 +270,10 @@ public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/
     /**
      * Creates the URL connection.
      */
-    protected Connection openConnection(URL url) throws IOException
+    protected Connection openConnection() throws IOException
     {
         Connection conn = new Connection();
-        conn.connect(hostname, port, virtualhost, user, password);
+        conn.connect(hostname, port, virtualhost, user, password, ssl);
 
         return conn;
     }
@@ -315,7 +315,9 @@ public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/
         try
         {
             URI uri = new URI(urlName);
-
+            
+            ssl = "amqps".equals(uri.getScheme());
+            
             hostname = uri.getHost();
             if (uri.getPort() != -1)
             {

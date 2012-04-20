@@ -163,7 +163,7 @@ public class AMQPHessianProxy implements InvocationHandler
 
     private Session openSession() throws IOException
     {
-        Connection conn = _factory.openConnection(null);
+        Connection conn = _factory.openConnection();
 
         Session session = conn.createSession(0);
         session.setAutoSync(true);
