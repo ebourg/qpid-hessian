@@ -150,7 +150,7 @@
           <quiet>true</quiet>
           <linksource>true</linksource>
           <links>
-            <link>http://java.sun.com/javase/6/docs/api/</link>
+            <link>http://docs.oracle.com/javase/6/docs/api/</link>
             <link>http://www.caucho.com/resin-4.0-javadoc/</link>
           </links>
         </configuration> 
