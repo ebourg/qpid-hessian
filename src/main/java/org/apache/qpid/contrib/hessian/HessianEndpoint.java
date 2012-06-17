@@ -181,7 +181,7 @@ public class HessianEndpoint
      * @param name    the name of the queue
      */
     private void createQueue(Session session, String name)
-    {       
+    {
         session.queueDeclare(name, null, null, Option.EXCLUSIVE, Option.AUTO_DELETE);
         session.exchangeBind(name, "amq.direct", name, null);
         session.messageSubscribe(name, name, MessageAcceptMode.NONE, MessageAcquireMode.PRE_ACQUIRED, null, 0, null);

@@ -23,7 +23,7 @@ import org.apache.qpid.transport.Connection;
 
 public class AMQPHessianProxyTest extends TestCase
 {
-    private String HOSTNAME = "localhost";
+    protected final String HOSTNAME = "localhost";
 
     protected Connection connection;
 
@@ -95,8 +95,8 @@ public class AMQPHessianProxyTest extends TestCase
         
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
-
-        EchoService service = (EchoService) factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        
+        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
         String message = "Hello again Hessian!";
 
         assertEquals(message, service.echo(message));

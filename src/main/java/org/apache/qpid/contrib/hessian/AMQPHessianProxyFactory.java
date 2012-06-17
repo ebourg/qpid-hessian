@@ -340,7 +340,7 @@ public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/
             if (matcher.matches())
             {
                 virtualhost = matcher.group(1);
-                if (matcher.groupCount() > 1)
+                if (matcher.groupCount() > 1 && matcher.group(3) != null)
                 {
                     queuePrefix = matcher.group(3);
                 }

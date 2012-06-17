@@ -16,6 +16,8 @@
 
 package org.apache.qpid.contrib.hessian;
 
+import org.apache.qpid.contrib.hessian.service.EchoService;
+import org.apache.qpid.contrib.hessian.service.EchoServiceEndpoint;
 import org.apache.qpid.contrib.hessian.service.EchoServiceImpl;
 
 public class HessianEndpointTest extends AMQPHessianProxyTest
@@ -24,5 +26,41 @@ public class HessianEndpointTest extends AMQPHessianProxyTest
     {
         HessianEndpoint endpoint = new HessianEndpoint(new EchoServiceImpl());
         endpoint.run(connection);
+    }
+
+    private void startEndpointWithPrefix()
+    {
+        HessianEndpoint endpoint = new HessianEndpoint();
+        endpoint.setServiceAPI(EchoService.class);
+        endpoint.setServiceImpl(new EchoServiceEndpoint());
+        endpoint.setQueuePrefix("foo");
+        endpoint.run(connection);
+    }
+    
+    public void testQueuePrefix() throws Exception
+    {
+        startEndpointWithPrefix();
+        
+        AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+        factory.setReadTimeout(5000);
+        factory.setQueuePrefix("foo");
+        
+        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        String message = "Hello Hessian!";
+        
+        assertEquals(message, service.echo(message));
+    }
+
+    public void testQueuePrefix2() throws Exception
+    {
+        startEndpointWithPrefix();
+        
+        AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+        factory.setReadTimeout(5000);
+        
+        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test/foo");
+        String message = "Hello Hessian!";
+        
+        assertEquals(message, service.echo(message));
     }
 }
