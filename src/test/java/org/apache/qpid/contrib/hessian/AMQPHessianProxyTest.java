@@ -16,9 +16,14 @@
 
 package org.apache.qpid.contrib.hessian;
 
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.concurrent.TimeoutException;
+
 import junit.framework.TestCase;
 import org.apache.qpid.contrib.hessian.service.EchoService;
 import org.apache.qpid.contrib.hessian.service.EchoServiceEndpoint;
+import org.apache.qpid.contrib.hessian.service.FailingService;
+import org.apache.qpid.contrib.hessian.service.FailingServiceEndpoint;
 import org.apache.qpid.transport.Connection;
 
 public class AMQPHessianProxyTest extends TestCase
@@ -100,5 +105,48 @@ public class AMQPHessianProxyTest extends TestCase
         String message = "Hello again Hessian!";
 
         assertEquals(message, service.echo(message));
+    }
+
+    public void testTimeout() throws Exception
+    {
+        FailingServiceEndpoint endpoint = new FailingServiceEndpoint();
+        endpoint.run(connection);
+        
+        AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+        factory.setReadTimeout(3000);
+        
+        FailingService service = factory.create(FailingService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        
+        try
+        {
+            service.timeout(5000);
+            fail("UndeclaredThrowableException expected");
+        }
+        catch (UndeclaredThrowableException e)
+        {
+            Throwable cause = e.getCause();
+            assertTrue(cause instanceof TimeoutException);
+        }
+    }
+
+    public void testSerializationError() throws Exception
+    {
+        FailingServiceEndpoint endpoint = new FailingServiceEndpoint();
+        endpoint.run(connection);
+        
+        AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+        factory.setReadTimeout(5000);
+        
+        FailingService service = factory.create(FailingService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        
+        try
+        {
+            service.getNotSerializable();
+            fail("IllegalStateException expected");
+        }
+        catch (IllegalStateException e)
+        {
+            assertTrue(e.getMessage().contains("must implement java.io.Serializable"));
+        }
     }
 }

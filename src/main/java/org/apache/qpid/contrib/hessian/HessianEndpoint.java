@@ -26,6 +26,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+import com.caucho.hessian.io.AbstractHessianOutput;
+import com.caucho.hessian.io.HessianFactory;
+import com.caucho.hessian.io.HessianInputFactory;
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
 import org.apache.qpid.transport.Connection;
@@ -258,9 +261,19 @@ public class HessianEndpoint
 
                 DeliveryProperties deliveryProps = new DeliveryProperties();
                 deliveryProps.setRoutingKey(from.getRoutingKey());
-
-                byte[] response = createResponseBody(xfr.getBodyBytes(), compressed);
-
+                
+                byte[] response;
+                try
+                {
+                    response = createResponseBody(xfr.getBodyBytes(), compressed);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    compressed = false;
+                    response = createFaultBody(xfr.getBodyBytes(), e);
+                }
+                
                 MessageProperties messageProperties = new MessageProperties();
                 messageProperties.setContentType("x-application/hessian");
                 if (compressed)
@@ -279,47 +292,79 @@ public class HessianEndpoint
     /**
      * Execute a request.
      */
-    private byte[] createResponseBody(byte[] request, boolean compressed) throws IOException
+    private byte[] createResponseBody(byte[] request, boolean compressed) throws Exception
+    {
+        InputStream in = new ByteArrayInputStream(request);
+        if (compressed)
+        {
+            in = new InflaterInputStream(new ByteArrayInputStream(request), new Inflater(true));
+        }
+        
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        OutputStream out;
+        if (compressed)
+        {
+            Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+            out = new DeflaterOutputStream(bout, deflater);
+        }
+        else
+        {
+            out = bout;
+        }
+        
+        HessianSkeleton skeleton = new HessianSkeleton(serviceImpl, serviceAPI);
+        skeleton.invoke(in, out, getSerializerFactory());
+        
+        if (out instanceof DeflaterOutputStream)
+        {
+            ((DeflaterOutputStream) out).finish();
+        }
+        out.flush();
+        out.close();
+
+        return bout.toByteArray();
+    }
+
+    private byte[] createFaultBody(byte[] request, Throwable cause)
     {
         try
         {
-            InputStream in = new ByteArrayInputStream(request);
-            if (compressed)
-            {
-                in = new InflaterInputStream(new ByteArrayInputStream(request), new Inflater(true));
-            }
-            
-            ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            OutputStream out;
-            if (compressed)
-            {
-                Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
-                out = new DeflaterOutputStream(bout, deflater);
-            }
-            else
-            {
-                out = bout;
-            }
-            
-            HessianSkeleton skeleton = new HessianSkeleton(serviceImpl, serviceAPI);
-            skeleton.invoke(in, out, getSerializerFactory());
-            
-            if (out instanceof DeflaterOutputStream)
-            {
-                ((DeflaterOutputStream) out).finish();
-            }
-            out.flush();
+            ByteArrayInputStream is = new ByteArrayInputStream(request);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+            AbstractHessianOutput out = createHessianOutput(new HessianInputFactory().readHeader(is), os);
+
+            out.writeFault(cause.getClass().getSimpleName(), cause.getMessage(), cause);
             out.close();
 
-            return bout.toByteArray();
+            return os.toByteArray();
         }
-        catch (RuntimeException e)
-        {
-            throw e;
-        }
-        catch (Throwable e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private AbstractHessianOutput createHessianOutput(HessianInputFactory.HeaderType header, OutputStream os)
+    {
+        AbstractHessianOutput out;
+        
+        HessianFactory hessianfactory = new HessianFactory();
+        switch (header)
+        {
+            case CALL_1_REPLY_1:
+                out = hessianfactory.createHessianOutput(os);
+                break;
+
+            case CALL_1_REPLY_2:
+            case HESSIAN_2:
+                out = hessianfactory.createHessian2Output(os);
+                break;
+
+            default:
+                throw new IllegalStateException(header + " is an unknown Hessian call");
+        }
+        
+        return out;
     }
 }
