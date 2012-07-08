@@ -49,6 +49,6 @@ Declare the dependency:
   <dependency>
     <groupId>org.apache-extras.qpid</groupId>
     <artifactId>qpid-hessian</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
   </dependency>
 

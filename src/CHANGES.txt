@@ -1,0 +1,12 @@
+Version 1.1, released on 2012-07-08
+
+- Added support for SSL with amqps:// URLs
+- Endpoints now support session resuming
+- Serialization errors are now reported immediately to the client and no longer cause a timeout
+- The queue prefix specified on the factory is no longer ignored if the service URL doesn't contain one
+- AMQPHessianProxyFactory has been generified
+
+
+Version 1.0, released on 2011-04-30
+
+- Initial release
