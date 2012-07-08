@@ -25,404 +25,406 @@
 <FONT color="green">022</FONT>    import java.io.PrintWriter;<a name="line.22"></a>
 <FONT color="green">023</FONT>    import java.lang.reflect.Proxy;<a name="line.23"></a>
 <FONT color="green">024</FONT>    import java.net.MalformedURLException;<a name="line.24"></a>
-<FONT color="green">025</FONT>    import java.net.URL;<a name="line.25"></a>
-<FONT color="green">026</FONT>    import java.net.URI;<a name="line.26"></a>
-<FONT color="green">027</FONT>    import java.net.URISyntaxException;<a name="line.27"></a>
+<FONT color="green">025</FONT>    import java.net.URI;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.net.URISyntaxException;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.regex.Matcher;<a name="line.27"></a>
 <FONT color="green">028</FONT>    import java.util.regex.Pattern;<a name="line.28"></a>
-<FONT color="green">029</FONT>    import java.util.regex.Matcher;<a name="line.29"></a>
-<FONT color="green">030</FONT>    <a name="line.30"></a>
-<FONT color="green">031</FONT>    import com.caucho.hessian.io.AbstractHessianInput;<a name="line.31"></a>
-<FONT color="green">032</FONT>    import com.caucho.hessian.io.AbstractHessianOutput;<a name="line.32"></a>
-<FONT color="green">033</FONT>    import com.caucho.hessian.io.Hessian2Input;<a name="line.33"></a>
-<FONT color="green">034</FONT>    import com.caucho.hessian.io.Hessian2Output;<a name="line.34"></a>
-<FONT color="green">035</FONT>    import com.caucho.hessian.io.HessianDebugInputStream;<a name="line.35"></a>
-<FONT color="green">036</FONT>    import com.caucho.hessian.io.HessianInput;<a name="line.36"></a>
-<FONT color="green">037</FONT>    import com.caucho.hessian.io.HessianOutput;<a name="line.37"></a>
-<FONT color="green">038</FONT>    import com.caucho.hessian.io.HessianRemoteResolver;<a name="line.38"></a>
-<FONT color="green">039</FONT>    import com.caucho.hessian.io.SerializerFactory;<a name="line.39"></a>
-<FONT color="green">040</FONT>    import com.caucho.services.client.ServiceProxyFactory;<a name="line.40"></a>
-<FONT color="green">041</FONT>    import org.apache.qpid.transport.Connection;<a name="line.41"></a>
-<FONT color="green">042</FONT>    <a name="line.42"></a>
-<FONT color="green">043</FONT>    /**<a name="line.43"></a>
-<FONT color="green">044</FONT>     * Factory for creating Hessian client stubs. The returned stub will<a name="line.44"></a>
-<FONT color="green">045</FONT>     * call the remote object for all methods.<a name="line.45"></a>
-<FONT color="green">046</FONT>     *<a name="line.46"></a>
-<FONT color="green">047</FONT>     * &lt;pre&gt;<a name="line.47"></a>
-<FONT color="green">048</FONT>     * HelloHome hello = (HelloHome) factory.create(HelloHome.class, null);<a name="line.48"></a>
-<FONT color="green">049</FONT>     * &lt;/pre&gt;<a name="line.49"></a>
-<FONT color="green">050</FONT>     *<a name="line.50"></a>
-<FONT color="green">051</FONT>     * After creation, the stub can be like a regular Java class. Because<a name="line.51"></a>
-<FONT color="green">052</FONT>     * it makes remote calls, it can throw more exceptions than a Java class.<a name="line.52"></a>
-<FONT color="green">053</FONT>     * In particular, it may throw protocol exceptions.<a name="line.53"></a>
+<FONT color="green">029</FONT>    <a name="line.29"></a>
+<FONT color="green">030</FONT>    import com.caucho.hessian.io.AbstractHessianInput;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import com.caucho.hessian.io.AbstractHessianOutput;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import com.caucho.hessian.io.Hessian2Input;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import com.caucho.hessian.io.Hessian2Output;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import com.caucho.hessian.io.HessianDebugInputStream;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import com.caucho.hessian.io.HessianInput;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import com.caucho.hessian.io.HessianOutput;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import com.caucho.hessian.io.HessianRemoteResolver;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import com.caucho.hessian.io.SerializerFactory;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import org.apache.qpid.transport.Connection;<a name="line.39"></a>
+<FONT color="green">040</FONT>    <a name="line.40"></a>
+<FONT color="green">041</FONT>    /**<a name="line.41"></a>
+<FONT color="green">042</FONT>     * Factory for creating Hessian client stubs. The returned stub will<a name="line.42"></a>
+<FONT color="green">043</FONT>     * call the remote object for all methods.<a name="line.43"></a>
+<FONT color="green">044</FONT>     *<a name="line.44"></a>
+<FONT color="green">045</FONT>     * &lt;pre&gt;<a name="line.45"></a>
+<FONT color="green">046</FONT>     * HelloHome hello = (HelloHome) factory.create(HelloHome.class, null);<a name="line.46"></a>
+<FONT color="green">047</FONT>     * &lt;/pre&gt;<a name="line.47"></a>
+<FONT color="green">048</FONT>     *<a name="line.48"></a>
+<FONT color="green">049</FONT>     * After creation, the stub can be like a regular Java class. Because<a name="line.49"></a>
+<FONT color="green">050</FONT>     * it makes remote calls, it can throw more exceptions than a Java class.<a name="line.50"></a>
+<FONT color="green">051</FONT>     * In particular, it may throw protocol exceptions.<a name="line.51"></a>
+<FONT color="green">052</FONT>     * <a name="line.52"></a>
+<FONT color="green">053</FONT>     * This class is derived from {@link com.caucho.hessian.client.HessianProxyFactory}. <a name="line.53"></a>
 <FONT color="green">054</FONT>     * <a name="line.54"></a>
-<FONT color="green">055</FONT>     * This class is derived from {@link com.caucho.hessian.client.HessianProxyFactory}. <a name="line.55"></a>
-<FONT color="green">056</FONT>     * <a name="line.56"></a>
-<FONT color="green">057</FONT>     * @author Emmanuel Bourg<a name="line.57"></a>
-<FONT color="green">058</FONT>     * @author Scott Ferguson<a name="line.58"></a>
-<FONT color="green">059</FONT>     */<a name="line.59"></a>
-<FONT color="green">060</FONT>    public class AMQPHessianProxyFactory implements ServiceProxyFactory<a name="line.60"></a>
-<FONT color="green">061</FONT>    {<a name="line.61"></a>
-<FONT color="green">062</FONT>        private SerializerFactory _serializerFactory;<a name="line.62"></a>
-<FONT color="green">063</FONT>        private HessianRemoteResolver _resolver;<a name="line.63"></a>
-<FONT color="green">064</FONT>    <a name="line.64"></a>
-<FONT color="green">065</FONT>        private String user;<a name="line.65"></a>
-<FONT color="green">066</FONT>        private String password;<a name="line.66"></a>
-<FONT color="green">067</FONT>        private String hostname;<a name="line.67"></a>
-<FONT color="green">068</FONT>        private String virtualhost;<a name="line.68"></a>
-<FONT color="green">069</FONT>        private int port = 5672;<a name="line.69"></a>
-<FONT color="green">070</FONT>        <a name="line.70"></a>
-<FONT color="green">071</FONT>        private String queuePrefix;<a name="line.71"></a>
-<FONT color="green">072</FONT>    <a name="line.72"></a>
-<FONT color="green">073</FONT>        private boolean isOverloadEnabled = false;<a name="line.73"></a>
-<FONT color="green">074</FONT>    <a name="line.74"></a>
-<FONT color="green">075</FONT>        private boolean isHessian2Reply = true;<a name="line.75"></a>
-<FONT color="green">076</FONT>        private boolean isHessian2Request = true;<a name="line.76"></a>
-<FONT color="green">077</FONT>    <a name="line.77"></a>
-<FONT color="green">078</FONT>        private boolean debug = false;<a name="line.78"></a>
-<FONT color="green">079</FONT>    <a name="line.79"></a>
-<FONT color="green">080</FONT>        private long readTimeout = -1;<a name="line.80"></a>
-<FONT color="green">081</FONT>        private long connectTimeout = -1;<a name="line.81"></a>
-<FONT color="green">082</FONT>        <a name="line.82"></a>
-<FONT color="green">083</FONT>        private boolean compressed;<a name="line.83"></a>
-<FONT color="green">084</FONT>    <a name="line.84"></a>
-<FONT color="green">085</FONT>        /**<a name="line.85"></a>
-<FONT color="green">086</FONT>         * Creates the new proxy factory.<a name="line.86"></a>
-<FONT color="green">087</FONT>         */<a name="line.87"></a>
-<FONT color="green">088</FONT>        public AMQPHessianProxyFactory()<a name="line.88"></a>
-<FONT color="green">089</FONT>        {<a name="line.89"></a>
-<FONT color="green">090</FONT>            _resolver = new HessianRemoteResolver()<a name="line.90"></a>
-<FONT color="green">091</FONT>            {<a name="line.91"></a>
-<FONT color="green">092</FONT>                public Object lookup(String type, String url) throws IOException<a name="line.92"></a>
-<FONT color="green">093</FONT>                {<a name="line.93"></a>
-<FONT color="green">094</FONT>                    ClassLoader loader = Thread.currentThread().getContextClassLoader();<a name="line.94"></a>
-<FONT color="green">095</FONT>    <a name="line.95"></a>
-<FONT color="green">096</FONT>                    try<a name="line.96"></a>
-<FONT color="green">097</FONT>                    {<a name="line.97"></a>
-<FONT color="green">098</FONT>                        Class api = Class.forName(type, false, loader);<a name="line.98"></a>
-<FONT color="green">099</FONT>                        return create(api, url);<a name="line.99"></a>
-<FONT color="green">100</FONT>                    }<a name="line.100"></a>
-<FONT color="green">101</FONT>                    catch (Exception e)<a name="line.101"></a>
-<FONT color="green">102</FONT>                    {<a name="line.102"></a>
-<FONT color="green">103</FONT>                        throw new IOException(String.valueOf(e));<a name="line.103"></a>
-<FONT color="green">104</FONT>                    }<a name="line.104"></a>
-<FONT color="green">105</FONT>                }<a name="line.105"></a>
-<FONT color="green">106</FONT>            };<a name="line.106"></a>
-<FONT color="green">107</FONT>        }<a name="line.107"></a>
-<FONT color="green">108</FONT>    <a name="line.108"></a>
-<FONT color="green">109</FONT>        /**<a name="line.109"></a>
-<FONT color="green">110</FONT>         * Sets the user connecting to the AMQP server.<a name="line.110"></a>
-<FONT color="green">111</FONT>         */<a name="line.111"></a>
-<FONT color="green">112</FONT>        public void setUser(String user)<a name="line.112"></a>
-<FONT color="green">113</FONT>        {<a name="line.113"></a>
-<FONT color="green">114</FONT>            this.user = user;<a name="line.114"></a>
-<FONT color="green">115</FONT>        }<a name="line.115"></a>
-<FONT color="green">116</FONT>    <a name="line.116"></a>
-<FONT color="green">117</FONT>        /**<a name="line.117"></a>
-<FONT color="green">118</FONT>         * Sets the password of the user connecting to the AMQP server.<a name="line.118"></a>
-<FONT color="green">119</FONT>         */<a name="line.119"></a>
-<FONT color="green">120</FONT>        public void setPassword(String password)<a name="line.120"></a>
-<FONT color="green">121</FONT>        {<a name="line.121"></a>
-<FONT color="green">122</FONT>            this.password = password;<a name="line.122"></a>
-<FONT color="green">123</FONT>        }<a name="line.123"></a>
-<FONT color="green">124</FONT>    <a name="line.124"></a>
-<FONT color="green">125</FONT>        /**<a name="line.125"></a>
-<FONT color="green">126</FONT>         * Returns the prefix of the queue that receives the hessian requests.<a name="line.126"></a>
-<FONT color="green">127</FONT>         */<a name="line.127"></a>
-<FONT color="green">128</FONT>        public String getQueuePrefix()<a name="line.128"></a>
-<FONT color="green">129</FONT>        {<a name="line.129"></a>
-<FONT color="green">130</FONT>            return queuePrefix;<a name="line.130"></a>
-<FONT color="green">131</FONT>        }<a name="line.131"></a>
-<FONT color="green">132</FONT>    <a name="line.132"></a>
-<FONT color="green">133</FONT>        /**<a name="line.133"></a>
-<FONT color="green">134</FONT>         * Sets the prefix of the queue that receives the hessian requests.<a name="line.134"></a>
-<FONT color="green">135</FONT>         */<a name="line.135"></a>
-<FONT color="green">136</FONT>        public void setQueuePrefix(String queuePrefix)<a name="line.136"></a>
-<FONT color="green">137</FONT>        {<a name="line.137"></a>
-<FONT color="green">138</FONT>            this.queuePrefix = queuePrefix;<a name="line.138"></a>
-<FONT color="green">139</FONT>        }<a name="line.139"></a>
-<FONT color="green">140</FONT>    <a name="line.140"></a>
-<FONT color="green">141</FONT>        /**<a name="line.141"></a>
-<FONT color="green">142</FONT>         * Sets the debug mode.<a name="line.142"></a>
-<FONT color="green">143</FONT>         */<a name="line.143"></a>
-<FONT color="green">144</FONT>        public void setDebug(boolean isDebug)<a name="line.144"></a>
-<FONT color="green">145</FONT>        {<a name="line.145"></a>
-<FONT color="green">146</FONT>            this.debug = isDebug;<a name="line.146"></a>
-<FONT color="green">147</FONT>        }<a name="line.147"></a>
-<FONT color="green">148</FONT>    <a name="line.148"></a>
-<FONT color="green">149</FONT>        /**<a name="line.149"></a>
-<FONT color="green">150</FONT>         * Gets the debug mode.<a name="line.150"></a>
-<FONT color="green">151</FONT>         */<a name="line.151"></a>
-<FONT color="green">152</FONT>        public boolean isDebug()<a name="line.152"></a>
-<FONT color="green">153</FONT>        {<a name="line.153"></a>
-<FONT color="green">154</FONT>            return debug;<a name="line.154"></a>
-<FONT color="green">155</FONT>        }<a name="line.155"></a>
-<FONT color="green">156</FONT>    <a name="line.156"></a>
-<FONT color="green">157</FONT>        /**<a name="line.157"></a>
-<FONT color="green">158</FONT>         * Returns true if overloaded methods are allowed (using mangling)<a name="line.158"></a>
-<FONT color="green">159</FONT>         */<a name="line.159"></a>
-<FONT color="green">160</FONT>        public boolean isOverloadEnabled()<a name="line.160"></a>
-<FONT color="green">161</FONT>        {<a name="line.161"></a>
-<FONT color="green">162</FONT>            return isOverloadEnabled;<a name="line.162"></a>
-<FONT color="green">163</FONT>        }<a name="line.163"></a>
-<FONT color="green">164</FONT>    <a name="line.164"></a>
-<FONT color="green">165</FONT>        /**<a name="line.165"></a>
-<FONT color="green">166</FONT>         * set true if overloaded methods are allowed (using mangling)<a name="line.166"></a>
-<FONT color="green">167</FONT>         */<a name="line.167"></a>
-<FONT color="green">168</FONT>        public void setOverloadEnabled(boolean isOverloadEnabled)<a name="line.168"></a>
-<FONT color="green">169</FONT>        {<a name="line.169"></a>
-<FONT color="green">170</FONT>            this.isOverloadEnabled = isOverloadEnabled;<a name="line.170"></a>
-<FONT color="green">171</FONT>        }<a name="line.171"></a>
-<FONT color="green">172</FONT>    <a name="line.172"></a>
-<FONT color="green">173</FONT>        /**<a name="line.173"></a>
-<FONT color="green">174</FONT>         * Returns the socket timeout on requests in milliseconds.<a name="line.174"></a>
-<FONT color="green">175</FONT>         */<a name="line.175"></a>
-<FONT color="green">176</FONT>        public long getReadTimeout()<a name="line.176"></a>
-<FONT color="green">177</FONT>        {<a name="line.177"></a>
-<FONT color="green">178</FONT>            return readTimeout;<a name="line.178"></a>
-<FONT color="green">179</FONT>        }<a name="line.179"></a>
-<FONT color="green">180</FONT>    <a name="line.180"></a>
-<FONT color="green">181</FONT>        /**<a name="line.181"></a>
-<FONT color="green">182</FONT>         * Sets the socket timeout on requests in milliseconds.<a name="line.182"></a>
-<FONT color="green">183</FONT>         */<a name="line.183"></a>
-<FONT color="green">184</FONT>        public void setReadTimeout(long timeout)<a name="line.184"></a>
-<FONT color="green">185</FONT>        {<a name="line.185"></a>
-<FONT color="green">186</FONT>            readTimeout = timeout;<a name="line.186"></a>
-<FONT color="green">187</FONT>        }<a name="line.187"></a>
-<FONT color="green">188</FONT>    <a name="line.188"></a>
-<FONT color="green">189</FONT>        /**<a name="line.189"></a>
-<FONT color="green">190</FONT>         * Returns the socket timeout on connect in milliseconds.<a name="line.190"></a>
-<FONT color="green">191</FONT>         */<a name="line.191"></a>
-<FONT color="green">192</FONT>        public long getConnectTimeout()<a name="line.192"></a>
-<FONT color="green">193</FONT>        {<a name="line.193"></a>
-<FONT color="green">194</FONT>            return connectTimeout;<a name="line.194"></a>
-<FONT color="green">195</FONT>        }<a name="line.195"></a>
-<FONT color="green">196</FONT>    <a name="line.196"></a>
-<FONT color="green">197</FONT>        /**<a name="line.197"></a>
-<FONT color="green">198</FONT>         * Sets the socket timeout on connect in milliseconds.<a name="line.198"></a>
-<FONT color="green">199</FONT>         */<a name="line.199"></a>
-<FONT color="green">200</FONT>        public void setConnectTimeout(long _connecTimeout)<a name="line.200"></a>
-<FONT color="green">201</FONT>        {<a name="line.201"></a>
-<FONT color="green">202</FONT>            this.connectTimeout = _connecTimeout;<a name="line.202"></a>
-<FONT color="green">203</FONT>        }<a name="line.203"></a>
-<FONT color="green">204</FONT>    <a name="line.204"></a>
-<FONT color="green">205</FONT>        /**<a name="line.205"></a>
-<FONT color="green">206</FONT>         * Indicates if the requests/responses should be compressed.<a name="line.206"></a>
-<FONT color="green">207</FONT>         */<a name="line.207"></a>
-<FONT color="green">208</FONT>        public boolean isCompressed()<a name="line.208"></a>
-<FONT color="green">209</FONT>        {<a name="line.209"></a>
-<FONT color="green">210</FONT>            return compressed;<a name="line.210"></a>
-<FONT color="green">211</FONT>        }<a name="line.211"></a>
-<FONT color="green">212</FONT>    <a name="line.212"></a>
-<FONT color="green">213</FONT>        /**<a name="line.213"></a>
-<FONT color="green">214</FONT>         * Specifies if the requests/responses should be compressed.<a name="line.214"></a>
-<FONT color="green">215</FONT>         */<a name="line.215"></a>
-<FONT color="green">216</FONT>        public void setCompressed(boolean compressed) <a name="line.216"></a>
-<FONT color="green">217</FONT>        {<a name="line.217"></a>
-<FONT color="green">218</FONT>            this.compressed = compressed;<a name="line.218"></a>
-<FONT color="green">219</FONT>        }<a name="line.219"></a>
-<FONT color="green">220</FONT>    <a name="line.220"></a>
-<FONT color="green">221</FONT>        /**<a name="line.221"></a>
-<FONT color="green">222</FONT>         * True if the proxy can read Hessian 2 responses.<a name="line.222"></a>
-<FONT color="green">223</FONT>         */<a name="line.223"></a>
-<FONT color="green">224</FONT>        public void setHessian2Reply(boolean isHessian2)<a name="line.224"></a>
-<FONT color="green">225</FONT>        {<a name="line.225"></a>
-<FONT color="green">226</FONT>            isHessian2Reply = isHessian2;<a name="line.226"></a>
-<FONT color="green">227</FONT>        }<a name="line.227"></a>
-<FONT color="green">228</FONT>    <a name="line.228"></a>
-<FONT color="green">229</FONT>        /**<a name="line.229"></a>
-<FONT color="green">230</FONT>         * True if the proxy should send Hessian 2 requests.<a name="line.230"></a>
-<FONT color="green">231</FONT>         */<a name="line.231"></a>
-<FONT color="green">232</FONT>        public void setHessian2Request(boolean isHessian2)<a name="line.232"></a>
-<FONT color="green">233</FONT>        {<a name="line.233"></a>
-<FONT color="green">234</FONT>            isHessian2Request = isHessian2;<a name="line.234"></a>
-<FONT color="green">235</FONT>    <a name="line.235"></a>
-<FONT color="green">236</FONT>            if (isHessian2)<a name="line.236"></a>
-<FONT color="green">237</FONT>            {<a name="line.237"></a>
-<FONT color="green">238</FONT>                isHessian2Reply = true;<a name="line.238"></a>
-<FONT color="green">239</FONT>            }<a name="line.239"></a>
-<FONT color="green">240</FONT>        }<a name="line.240"></a>
-<FONT color="green">241</FONT>    <a name="line.241"></a>
-<FONT color="green">242</FONT>        /**<a name="line.242"></a>
-<FONT color="green">243</FONT>         * Returns the remote resolver.<a name="line.243"></a>
-<FONT color="green">244</FONT>         */<a name="line.244"></a>
-<FONT color="green">245</FONT>        public HessianRemoteResolver getRemoteResolver()<a name="line.245"></a>
-<FONT color="green">246</FONT>        {<a name="line.246"></a>
-<FONT color="green">247</FONT>            return _resolver;<a name="line.247"></a>
-<FONT color="green">248</FONT>        }<a name="line.248"></a>
-<FONT color="green">249</FONT>    <a name="line.249"></a>
-<FONT color="green">250</FONT>        /**<a name="line.250"></a>
-<FONT color="green">251</FONT>         * Sets the serializer factory.<a name="line.251"></a>
-<FONT color="green">252</FONT>         */<a name="line.252"></a>
-<FONT color="green">253</FONT>        public void setSerializerFactory(SerializerFactory factory)<a name="line.253"></a>
-<FONT color="green">254</FONT>        {<a name="line.254"></a>
-<FONT color="green">255</FONT>            _serializerFactory = factory;<a name="line.255"></a>
-<FONT color="green">256</FONT>        }<a name="line.256"></a>
-<FONT color="green">257</FONT>    <a name="line.257"></a>
-<FONT color="green">258</FONT>        /**<a name="line.258"></a>
-<FONT color="green">259</FONT>         * Gets the serializer factory.<a name="line.259"></a>
-<FONT color="green">260</FONT>         */<a name="line.260"></a>
-<FONT color="green">261</FONT>        public SerializerFactory getSerializerFactory()<a name="line.261"></a>
-<FONT color="green">262</FONT>        {<a name="line.262"></a>
-<FONT color="green">263</FONT>            if (_serializerFactory == null)<a name="line.263"></a>
-<FONT color="green">264</FONT>            {<a name="line.264"></a>
-<FONT color="green">265</FONT>                _serializerFactory = new SerializerFactory();<a name="line.265"></a>
-<FONT color="green">266</FONT>            }<a name="line.266"></a>
-<FONT color="green">267</FONT>    <a name="line.267"></a>
-<FONT color="green">268</FONT>            return _serializerFactory;<a name="line.268"></a>
-<FONT color="green">269</FONT>        }<a name="line.269"></a>
-<FONT color="green">270</FONT>    <a name="line.270"></a>
-<FONT color="green">271</FONT>        /**<a name="line.271"></a>
-<FONT color="green">272</FONT>         * Creates the URL connection.<a name="line.272"></a>
-<FONT color="green">273</FONT>         */<a name="line.273"></a>
-<FONT color="green">274</FONT>        protected Connection openConnection(URL url) throws IOException<a name="line.274"></a>
-<FONT color="green">275</FONT>        {<a name="line.275"></a>
-<FONT color="green">276</FONT>            Connection conn = new Connection();<a name="line.276"></a>
-<FONT color="green">277</FONT>            conn.connect(hostname, port, virtualhost, user, password);<a name="line.277"></a>
-<FONT color="green">278</FONT>    <a name="line.278"></a>
-<FONT color="green">279</FONT>            return conn;<a name="line.279"></a>
-<FONT color="green">280</FONT>        }<a name="line.280"></a>
-<FONT color="green">281</FONT>    <a name="line.281"></a>
-<FONT color="green">282</FONT>        /**<a name="line.282"></a>
-<FONT color="green">283</FONT>         * Creates a new proxy with the specified URL.  The returned object<a name="line.283"></a>
-<FONT color="green">284</FONT>         * is a proxy with the interface specified by api.<a name="line.284"></a>
-<FONT color="green">285</FONT>         *<a name="line.285"></a>
-<FONT color="green">286</FONT>         * &lt;pre&gt;<a name="line.286"></a>
-<FONT color="green">287</FONT>         * String url = "amqp://user:password@localhost:5672/vhost/queue");<a name="line.287"></a>
-<FONT color="green">288</FONT>         * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);<a name="line.288"></a>
-<FONT color="green">289</FONT>         * &lt;/pre&gt;<a name="line.289"></a>
-<FONT color="green">290</FONT>         *<a name="line.290"></a>
-<FONT color="green">291</FONT>         * @param api the interface the proxy class needs to implement<a name="line.291"></a>
-<FONT color="green">292</FONT>         * @param urlName the URL where the client object is located.<a name="line.292"></a>
-<FONT color="green">293</FONT>         * @return a proxy to the object with the specified interface.<a name="line.293"></a>
-<FONT color="green">294</FONT>         */<a name="line.294"></a>
-<FONT color="green">295</FONT>        public Object create(Class api, String urlName) throws MalformedURLException<a name="line.295"></a>
-<FONT color="green">296</FONT>        {<a name="line.296"></a>
-<FONT color="green">297</FONT>            return create(api, urlName, api.getClassLoader());<a name="line.297"></a>
-<FONT color="green">298</FONT>        }<a name="line.298"></a>
-<FONT color="green">299</FONT>    <a name="line.299"></a>
-<FONT color="green">300</FONT>        /**<a name="line.300"></a>
-<FONT color="green">301</FONT>         * Creates a new proxy with the specified URL.  The returned object<a name="line.301"></a>
-<FONT color="green">302</FONT>         * is a proxy with the interface specified by api.<a name="line.302"></a>
-<FONT color="green">303</FONT>         *<a name="line.303"></a>
-<FONT color="green">304</FONT>         * &lt;pre&gt;<a name="line.304"></a>
-<FONT color="green">305</FONT>         * String url = "amqp://user:password@localhost:5672/vhost/queue");<a name="line.305"></a>
-<FONT color="green">306</FONT>         * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);<a name="line.306"></a>
-<FONT color="green">307</FONT>         * &lt;/pre&gt;<a name="line.307"></a>
-<FONT color="green">308</FONT>         *<a name="line.308"></a>
-<FONT color="green">309</FONT>         * @param api the interface the proxy class needs to implement<a name="line.309"></a>
-<FONT color="green">310</FONT>         * @param urlName the URL where the client object is located.<a name="line.310"></a>
-<FONT color="green">311</FONT>         * @return a proxy to the object with the specified interface.<a name="line.311"></a>
-<FONT color="green">312</FONT>         */<a name="line.312"></a>
-<FONT color="green">313</FONT>        public Object create(Class api, String urlName, ClassLoader loader) throws MalformedURLException<a name="line.313"></a>
+<FONT color="green">055</FONT>     * @author Emmanuel Bourg<a name="line.55"></a>
+<FONT color="green">056</FONT>     * @author Scott Ferguson<a name="line.56"></a>
+<FONT color="green">057</FONT>     */<a name="line.57"></a>
+<FONT color="green">058</FONT>    public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/<a name="line.58"></a>
+<FONT color="green">059</FONT>    {<a name="line.59"></a>
+<FONT color="green">060</FONT>        private SerializerFactory _serializerFactory;<a name="line.60"></a>
+<FONT color="green">061</FONT>        private HessianRemoteResolver _resolver;<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>        private String user;<a name="line.63"></a>
+<FONT color="green">064</FONT>        private String password;<a name="line.64"></a>
+<FONT color="green">065</FONT>        private String hostname;<a name="line.65"></a>
+<FONT color="green">066</FONT>        private String virtualhost;<a name="line.66"></a>
+<FONT color="green">067</FONT>        private int port = 5672;<a name="line.67"></a>
+<FONT color="green">068</FONT>        private boolean ssl = false;<a name="line.68"></a>
+<FONT color="green">069</FONT>        <a name="line.69"></a>
+<FONT color="green">070</FONT>        private String queuePrefix;<a name="line.70"></a>
+<FONT color="green">071</FONT>    <a name="line.71"></a>
+<FONT color="green">072</FONT>        private boolean isOverloadEnabled = false;<a name="line.72"></a>
+<FONT color="green">073</FONT>    <a name="line.73"></a>
+<FONT color="green">074</FONT>        private boolean isHessian2Reply = true;<a name="line.74"></a>
+<FONT color="green">075</FONT>        private boolean isHessian2Request = true;<a name="line.75"></a>
+<FONT color="green">076</FONT>    <a name="line.76"></a>
+<FONT color="green">077</FONT>        private boolean debug = false;<a name="line.77"></a>
+<FONT color="green">078</FONT>    <a name="line.78"></a>
+<FONT color="green">079</FONT>        private long readTimeout = -1;<a name="line.79"></a>
+<FONT color="green">080</FONT>        private long connectTimeout = -1;<a name="line.80"></a>
+<FONT color="green">081</FONT>        <a name="line.81"></a>
+<FONT color="green">082</FONT>        private boolean compressed;<a name="line.82"></a>
+<FONT color="green">083</FONT>    <a name="line.83"></a>
+<FONT color="green">084</FONT>        /**<a name="line.84"></a>
+<FONT color="green">085</FONT>         * Creates the new proxy factory.<a name="line.85"></a>
+<FONT color="green">086</FONT>         */<a name="line.86"></a>
+<FONT color="green">087</FONT>        public AMQPHessianProxyFactory()<a name="line.87"></a>
+<FONT color="green">088</FONT>        {<a name="line.88"></a>
+<FONT color="green">089</FONT>            _resolver = new HessianRemoteResolver()<a name="line.89"></a>
+<FONT color="green">090</FONT>            {<a name="line.90"></a>
+<FONT color="green">091</FONT>                public Object lookup(String type, String url) throws IOException<a name="line.91"></a>
+<FONT color="green">092</FONT>                {<a name="line.92"></a>
+<FONT color="green">093</FONT>                    ClassLoader loader = Thread.currentThread().getContextClassLoader();<a name="line.93"></a>
+<FONT color="green">094</FONT>    <a name="line.94"></a>
+<FONT color="green">095</FONT>                    try<a name="line.95"></a>
+<FONT color="green">096</FONT>                    {<a name="line.96"></a>
+<FONT color="green">097</FONT>                        Class&lt;?&gt; api = Class.forName(type, false, loader);<a name="line.97"></a>
+<FONT color="green">098</FONT>                        return create(api, url);<a name="line.98"></a>
+<FONT color="green">099</FONT>                    }<a name="line.99"></a>
+<FONT color="green">100</FONT>                    catch (Exception e)<a name="line.100"></a>
+<FONT color="green">101</FONT>                    {<a name="line.101"></a>
+<FONT color="green">102</FONT>                        throw new IOException(String.valueOf(e));<a name="line.102"></a>
+<FONT color="green">103</FONT>                    }<a name="line.103"></a>
+<FONT color="green">104</FONT>                }<a name="line.104"></a>
+<FONT color="green">105</FONT>            };<a name="line.105"></a>
+<FONT color="green">106</FONT>        }<a name="line.106"></a>
+<FONT color="green">107</FONT>    <a name="line.107"></a>
+<FONT color="green">108</FONT>        /**<a name="line.108"></a>
+<FONT color="green">109</FONT>         * Sets the user connecting to the AMQP server.<a name="line.109"></a>
+<FONT color="green">110</FONT>         */<a name="line.110"></a>
+<FONT color="green">111</FONT>        public void setUser(String user)<a name="line.111"></a>
+<FONT color="green">112</FONT>        {<a name="line.112"></a>
+<FONT color="green">113</FONT>            this.user = user;<a name="line.113"></a>
+<FONT color="green">114</FONT>        }<a name="line.114"></a>
+<FONT color="green">115</FONT>    <a name="line.115"></a>
+<FONT color="green">116</FONT>        /**<a name="line.116"></a>
+<FONT color="green">117</FONT>         * Sets the password of the user connecting to the AMQP server.<a name="line.117"></a>
+<FONT color="green">118</FONT>         */<a name="line.118"></a>
+<FONT color="green">119</FONT>        public void setPassword(String password)<a name="line.119"></a>
+<FONT color="green">120</FONT>        {<a name="line.120"></a>
+<FONT color="green">121</FONT>            this.password = password;<a name="line.121"></a>
+<FONT color="green">122</FONT>        }<a name="line.122"></a>
+<FONT color="green">123</FONT>    <a name="line.123"></a>
+<FONT color="green">124</FONT>        /**<a name="line.124"></a>
+<FONT color="green">125</FONT>         * Returns the prefix of the queue that receives the hessian requests.<a name="line.125"></a>
+<FONT color="green">126</FONT>         */<a name="line.126"></a>
+<FONT color="green">127</FONT>        public String getQueuePrefix()<a name="line.127"></a>
+<FONT color="green">128</FONT>        {<a name="line.128"></a>
+<FONT color="green">129</FONT>            return queuePrefix;<a name="line.129"></a>
+<FONT color="green">130</FONT>        }<a name="line.130"></a>
+<FONT color="green">131</FONT>    <a name="line.131"></a>
+<FONT color="green">132</FONT>        /**<a name="line.132"></a>
+<FONT color="green">133</FONT>         * Sets the prefix of the queue that receives the hessian requests.<a name="line.133"></a>
+<FONT color="green">134</FONT>         */<a name="line.134"></a>
+<FONT color="green">135</FONT>        public void setQueuePrefix(String queuePrefix)<a name="line.135"></a>
+<FONT color="green">136</FONT>        {<a name="line.136"></a>
+<FONT color="green">137</FONT>            this.queuePrefix = queuePrefix;<a name="line.137"></a>
+<FONT color="green">138</FONT>        }<a name="line.138"></a>
+<FONT color="green">139</FONT>    <a name="line.139"></a>
+<FONT color="green">140</FONT>        /**<a name="line.140"></a>
+<FONT color="green">141</FONT>         * Sets the debug mode.<a name="line.141"></a>
+<FONT color="green">142</FONT>         */<a name="line.142"></a>
+<FONT color="green">143</FONT>        public void setDebug(boolean isDebug)<a name="line.143"></a>
+<FONT color="green">144</FONT>        {<a name="line.144"></a>
+<FONT color="green">145</FONT>            this.debug = isDebug;<a name="line.145"></a>
+<FONT color="green">146</FONT>        }<a name="line.146"></a>
+<FONT color="green">147</FONT>    <a name="line.147"></a>
+<FONT color="green">148</FONT>        /**<a name="line.148"></a>
+<FONT color="green">149</FONT>         * Gets the debug mode.<a name="line.149"></a>
+<FONT color="green">150</FONT>         */<a name="line.150"></a>
+<FONT color="green">151</FONT>        public boolean isDebug()<a name="line.151"></a>
+<FONT color="green">152</FONT>        {<a name="line.152"></a>
+<FONT color="green">153</FONT>            return debug;<a name="line.153"></a>
+<FONT color="green">154</FONT>        }<a name="line.154"></a>
+<FONT color="green">155</FONT>    <a name="line.155"></a>
+<FONT color="green">156</FONT>        /**<a name="line.156"></a>
+<FONT color="green">157</FONT>         * Returns true if overloaded methods are allowed (using mangling)<a name="line.157"></a>
+<FONT color="green">158</FONT>         */<a name="line.158"></a>
+<FONT color="green">159</FONT>        public boolean isOverloadEnabled()<a name="line.159"></a>
+<FONT color="green">160</FONT>        {<a name="line.160"></a>
+<FONT color="green">161</FONT>            return isOverloadEnabled;<a name="line.161"></a>
+<FONT color="green">162</FONT>        }<a name="line.162"></a>
+<FONT color="green">163</FONT>    <a name="line.163"></a>
+<FONT color="green">164</FONT>        /**<a name="line.164"></a>
+<FONT color="green">165</FONT>         * set true if overloaded methods are allowed (using mangling)<a name="line.165"></a>
+<FONT color="green">166</FONT>         */<a name="line.166"></a>
+<FONT color="green">167</FONT>        public void setOverloadEnabled(boolean isOverloadEnabled)<a name="line.167"></a>
+<FONT color="green">168</FONT>        {<a name="line.168"></a>
+<FONT color="green">169</FONT>            this.isOverloadEnabled = isOverloadEnabled;<a name="line.169"></a>
+<FONT color="green">170</FONT>        }<a name="line.170"></a>
+<FONT color="green">171</FONT>    <a name="line.171"></a>
+<FONT color="green">172</FONT>        /**<a name="line.172"></a>
+<FONT color="green">173</FONT>         * Returns the socket timeout on requests in milliseconds.<a name="line.173"></a>
+<FONT color="green">174</FONT>         */<a name="line.174"></a>
+<FONT color="green">175</FONT>        public long getReadTimeout()<a name="line.175"></a>
+<FONT color="green">176</FONT>        {<a name="line.176"></a>
+<FONT color="green">177</FONT>            return readTimeout;<a name="line.177"></a>
+<FONT color="green">178</FONT>        }<a name="line.178"></a>
+<FONT color="green">179</FONT>    <a name="line.179"></a>
+<FONT color="green">180</FONT>        /**<a name="line.180"></a>
+<FONT color="green">181</FONT>         * Sets the socket timeout on requests in milliseconds.<a name="line.181"></a>
+<FONT color="green">182</FONT>         */<a name="line.182"></a>
+<FONT color="green">183</FONT>        public void setReadTimeout(long timeout)<a name="line.183"></a>
+<FONT color="green">184</FONT>        {<a name="line.184"></a>
+<FONT color="green">185</FONT>            readTimeout = timeout;<a name="line.185"></a>
+<FONT color="green">186</FONT>        }<a name="line.186"></a>
+<FONT color="green">187</FONT>    <a name="line.187"></a>
+<FONT color="green">188</FONT>        /**<a name="line.188"></a>
+<FONT color="green">189</FONT>         * Returns the socket timeout on connect in milliseconds.<a name="line.189"></a>
+<FONT color="green">190</FONT>         */<a name="line.190"></a>
+<FONT color="green">191</FONT>        public long getConnectTimeout()<a name="line.191"></a>
+<FONT color="green">192</FONT>        {<a name="line.192"></a>
+<FONT color="green">193</FONT>            return connectTimeout;<a name="line.193"></a>
+<FONT color="green">194</FONT>        }<a name="line.194"></a>
+<FONT color="green">195</FONT>    <a name="line.195"></a>
+<FONT color="green">196</FONT>        /**<a name="line.196"></a>
+<FONT color="green">197</FONT>         * Sets the socket timeout on connect in milliseconds.<a name="line.197"></a>
+<FONT color="green">198</FONT>         */<a name="line.198"></a>
+<FONT color="green">199</FONT>        public void setConnectTimeout(long _connecTimeout)<a name="line.199"></a>
+<FONT color="green">200</FONT>        {<a name="line.200"></a>
+<FONT color="green">201</FONT>            this.connectTimeout = _connecTimeout;<a name="line.201"></a>
+<FONT color="green">202</FONT>        }<a name="line.202"></a>
+<FONT color="green">203</FONT>    <a name="line.203"></a>
+<FONT color="green">204</FONT>        /**<a name="line.204"></a>
+<FONT color="green">205</FONT>         * Indicates if the requests/responses should be compressed.<a name="line.205"></a>
+<FONT color="green">206</FONT>         */<a name="line.206"></a>
+<FONT color="green">207</FONT>        public boolean isCompressed()<a name="line.207"></a>
+<FONT color="green">208</FONT>        {<a name="line.208"></a>
+<FONT color="green">209</FONT>            return compressed;<a name="line.209"></a>
+<FONT color="green">210</FONT>        }<a name="line.210"></a>
+<FONT color="green">211</FONT>    <a name="line.211"></a>
+<FONT color="green">212</FONT>        /**<a name="line.212"></a>
+<FONT color="green">213</FONT>         * Specifies if the requests/responses should be compressed.<a name="line.213"></a>
+<FONT color="green">214</FONT>         */<a name="line.214"></a>
+<FONT color="green">215</FONT>        public void setCompressed(boolean compressed) <a name="line.215"></a>
+<FONT color="green">216</FONT>        {<a name="line.216"></a>
+<FONT color="green">217</FONT>            this.compressed = compressed;<a name="line.217"></a>
+<FONT color="green">218</FONT>        }<a name="line.218"></a>
+<FONT color="green">219</FONT>    <a name="line.219"></a>
+<FONT color="green">220</FONT>        /**<a name="line.220"></a>
+<FONT color="green">221</FONT>         * True if the proxy can read Hessian 2 responses.<a name="line.221"></a>
+<FONT color="green">222</FONT>         */<a name="line.222"></a>
+<FONT color="green">223</FONT>        public void setHessian2Reply(boolean isHessian2)<a name="line.223"></a>
+<FONT color="green">224</FONT>        {<a name="line.224"></a>
+<FONT color="green">225</FONT>            isHessian2Reply = isHessian2;<a name="line.225"></a>
+<FONT color="green">226</FONT>        }<a name="line.226"></a>
+<FONT color="green">227</FONT>    <a name="line.227"></a>
+<FONT color="green">228</FONT>        /**<a name="line.228"></a>
+<FONT color="green">229</FONT>         * True if the proxy should send Hessian 2 requests.<a name="line.229"></a>
+<FONT color="green">230</FONT>         */<a name="line.230"></a>
+<FONT color="green">231</FONT>        public void setHessian2Request(boolean isHessian2)<a name="line.231"></a>
+<FONT color="green">232</FONT>        {<a name="line.232"></a>
+<FONT color="green">233</FONT>            isHessian2Request = isHessian2;<a name="line.233"></a>
+<FONT color="green">234</FONT>    <a name="line.234"></a>
+<FONT color="green">235</FONT>            if (isHessian2)<a name="line.235"></a>
+<FONT color="green">236</FONT>            {<a name="line.236"></a>
+<FONT color="green">237</FONT>                isHessian2Reply = true;<a name="line.237"></a>
+<FONT color="green">238</FONT>            }<a name="line.238"></a>
+<FONT color="green">239</FONT>        }<a name="line.239"></a>
+<FONT color="green">240</FONT>    <a name="line.240"></a>
+<FONT color="green">241</FONT>        /**<a name="line.241"></a>
+<FONT color="green">242</FONT>         * Returns the remote resolver.<a name="line.242"></a>
+<FONT color="green">243</FONT>         */<a name="line.243"></a>
+<FONT color="green">244</FONT>        public HessianRemoteResolver getRemoteResolver()<a name="line.244"></a>
+<FONT color="green">245</FONT>        {<a name="line.245"></a>
+<FONT color="green">246</FONT>            return _resolver;<a name="line.246"></a>
+<FONT color="green">247</FONT>        }<a name="line.247"></a>
+<FONT color="green">248</FONT>    <a name="line.248"></a>
+<FONT color="green">249</FONT>        /**<a name="line.249"></a>
+<FONT color="green">250</FONT>         * Sets the serializer factory.<a name="line.250"></a>
+<FONT color="green">251</FONT>         */<a name="line.251"></a>
+<FONT color="green">252</FONT>        public void setSerializerFactory(SerializerFactory factory)<a name="line.252"></a>
+<FONT color="green">253</FONT>        {<a name="line.253"></a>
+<FONT color="green">254</FONT>            _serializerFactory = factory;<a name="line.254"></a>
+<FONT color="green">255</FONT>        }<a name="line.255"></a>
+<FONT color="green">256</FONT>    <a name="line.256"></a>
+<FONT color="green">257</FONT>        /**<a name="line.257"></a>
+<FONT color="green">258</FONT>         * Gets the serializer factory.<a name="line.258"></a>
+<FONT color="green">259</FONT>         */<a name="line.259"></a>
+<FONT color="green">260</FONT>        public SerializerFactory getSerializerFactory()<a name="line.260"></a>
+<FONT color="green">261</FONT>        {<a name="line.261"></a>
+<FONT color="green">262</FONT>            if (_serializerFactory == null)<a name="line.262"></a>
+<FONT color="green">263</FONT>            {<a name="line.263"></a>
+<FONT color="green">264</FONT>                _serializerFactory = new SerializerFactory();<a name="line.264"></a>
+<FONT color="green">265</FONT>            }<a name="line.265"></a>
+<FONT color="green">266</FONT>    <a name="line.266"></a>
+<FONT color="green">267</FONT>            return _serializerFactory;<a name="line.267"></a>
+<FONT color="green">268</FONT>        }<a name="line.268"></a>
+<FONT color="green">269</FONT>    <a name="line.269"></a>
+<FONT color="green">270</FONT>        /**<a name="line.270"></a>
+<FONT color="green">271</FONT>         * Creates the URL connection.<a name="line.271"></a>
+<FONT color="green">272</FONT>         */<a name="line.272"></a>
+<FONT color="green">273</FONT>        protected Connection openConnection() throws IOException<a name="line.273"></a>
+<FONT color="green">274</FONT>        {<a name="line.274"></a>
+<FONT color="green">275</FONT>            Connection conn = new Connection();<a name="line.275"></a>
+<FONT color="green">276</FONT>            conn.connect(hostname, port, virtualhost, user, password, ssl);<a name="line.276"></a>
+<FONT color="green">277</FONT>    <a name="line.277"></a>
+<FONT color="green">278</FONT>            return conn;<a name="line.278"></a>
+<FONT color="green">279</FONT>        }<a name="line.279"></a>
+<FONT color="green">280</FONT>    <a name="line.280"></a>
+<FONT color="green">281</FONT>        /**<a name="line.281"></a>
+<FONT color="green">282</FONT>         * Creates a new proxy with the specified URL.  The returned object<a name="line.282"></a>
+<FONT color="green">283</FONT>         * is a proxy with the interface specified by api.<a name="line.283"></a>
+<FONT color="green">284</FONT>         *<a name="line.284"></a>
+<FONT color="green">285</FONT>         * &lt;pre&gt;<a name="line.285"></a>
+<FONT color="green">286</FONT>         * String url = "amqp://user:password@localhost:5672/vhost/queue");<a name="line.286"></a>
+<FONT color="green">287</FONT>         * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);<a name="line.287"></a>
+<FONT color="green">288</FONT>         * &lt;/pre&gt;<a name="line.288"></a>
+<FONT color="green">289</FONT>         *<a name="line.289"></a>
+<FONT color="green">290</FONT>         * @param api the interface the proxy class needs to implement<a name="line.290"></a>
+<FONT color="green">291</FONT>         * @param urlName the URL where the client object is located.<a name="line.291"></a>
+<FONT color="green">292</FONT>         * @return a proxy to the object with the specified interface.<a name="line.292"></a>
+<FONT color="green">293</FONT>         */<a name="line.293"></a>
+<FONT color="green">294</FONT>        public &lt;T&gt; T create(Class&lt;T&gt; api, String urlName) throws MalformedURLException<a name="line.294"></a>
+<FONT color="green">295</FONT>        {<a name="line.295"></a>
+<FONT color="green">296</FONT>            return create(api, urlName, api.getClassLoader());<a name="line.296"></a>
+<FONT color="green">297</FONT>        }<a name="line.297"></a>
+<FONT color="green">298</FONT>    <a name="line.298"></a>
+<FONT color="green">299</FONT>        /**<a name="line.299"></a>
+<FONT color="green">300</FONT>         * Creates a new proxy with the specified URL.  The returned object<a name="line.300"></a>
+<FONT color="green">301</FONT>         * is a proxy with the interface specified by api.<a name="line.301"></a>
+<FONT color="green">302</FONT>         *<a name="line.302"></a>
+<FONT color="green">303</FONT>         * &lt;pre&gt;<a name="line.303"></a>
+<FONT color="green">304</FONT>         * String url = "amqp://user:password@localhost:5672/vhost/queue");<a name="line.304"></a>
+<FONT color="green">305</FONT>         * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);<a name="line.305"></a>
+<FONT color="green">306</FONT>         * &lt;/pre&gt;<a name="line.306"></a>
+<FONT color="green">307</FONT>         *<a name="line.307"></a>
+<FONT color="green">308</FONT>         * @param api the interface the proxy class needs to implement<a name="line.308"></a>
+<FONT color="green">309</FONT>         * @param urlName the URL where the client object is located.<a name="line.309"></a>
+<FONT color="green">310</FONT>         * @return a proxy to the object with the specified interface.<a name="line.310"></a>
+<FONT color="green">311</FONT>         */<a name="line.311"></a>
+<FONT color="green">312</FONT>        @SuppressWarnings("unchecked")<a name="line.312"></a>
+<FONT color="green">313</FONT>        public &lt;T&gt; T create(Class&lt;T&gt; api, String urlName, ClassLoader loader) throws MalformedURLException<a name="line.313"></a>
 <FONT color="green">314</FONT>        {<a name="line.314"></a>
 <FONT color="green">315</FONT>            try<a name="line.315"></a>
 <FONT color="green">316</FONT>            {<a name="line.316"></a>
 <FONT color="green">317</FONT>                URI uri = new URI(urlName);<a name="line.317"></a>
-<FONT color="green">318</FONT>    <a name="line.318"></a>
-<FONT color="green">319</FONT>                hostname = uri.getHost();<a name="line.319"></a>
-<FONT color="green">320</FONT>                if (uri.getPort() != -1)<a name="line.320"></a>
-<FONT color="green">321</FONT>                {<a name="line.321"></a>
-<FONT color="green">322</FONT>                    port = uri.getPort();<a name="line.322"></a>
-<FONT color="green">323</FONT>                }<a name="line.323"></a>
-<FONT color="green">324</FONT>    <a name="line.324"></a>
-<FONT color="green">325</FONT>                String userinfo = uri.getUserInfo();<a name="line.325"></a>
-<FONT color="green">326</FONT>                if (userinfo != null)<a name="line.326"></a>
-<FONT color="green">327</FONT>                {<a name="line.327"></a>
-<FONT color="green">328</FONT>                    String[] parts = userinfo.split(":");<a name="line.328"></a>
-<FONT color="green">329</FONT>                    user = parts[0];<a name="line.329"></a>
-<FONT color="green">330</FONT>                    if (parts.length &gt; 0)<a name="line.330"></a>
-<FONT color="green">331</FONT>                    {<a name="line.331"></a>
-<FONT color="green">332</FONT>                        password = parts[1];<a name="line.332"></a>
-<FONT color="green">333</FONT>                    }<a name="line.333"></a>
-<FONT color="green">334</FONT>                }<a name="line.334"></a>
-<FONT color="green">335</FONT>    <a name="line.335"></a>
-<FONT color="green">336</FONT>                Pattern pattern = Pattern.compile("/([^/]+)(/(.*))?");<a name="line.336"></a>
-<FONT color="green">337</FONT>                Matcher matcher = pattern.matcher(uri.getPath());<a name="line.337"></a>
-<FONT color="green">338</FONT>                if (matcher.matches())<a name="line.338"></a>
-<FONT color="green">339</FONT>                {<a name="line.339"></a>
-<FONT color="green">340</FONT>                    virtualhost = matcher.group(1);<a name="line.340"></a>
-<FONT color="green">341</FONT>                    if (matcher.groupCount() &gt; 1)<a name="line.341"></a>
-<FONT color="green">342</FONT>                    {<a name="line.342"></a>
-<FONT color="green">343</FONT>                        queuePrefix = matcher.group(3);<a name="line.343"></a>
-<FONT color="green">344</FONT>                    }<a name="line.344"></a>
-<FONT color="green">345</FONT>                }<a name="line.345"></a>
-<FONT color="green">346</FONT>            }<a name="line.346"></a>
-<FONT color="green">347</FONT>            catch (URISyntaxException e)<a name="line.347"></a>
-<FONT color="green">348</FONT>            {<a name="line.348"></a>
-<FONT color="green">349</FONT>                throw (MalformedURLException) new MalformedURLException().initCause(e);<a name="line.349"></a>
-<FONT color="green">350</FONT>            }<a name="line.350"></a>
-<FONT color="green">351</FONT>            <a name="line.351"></a>
-<FONT color="green">352</FONT>            AMQPHessianProxy handler = new AMQPHessianProxy(this);<a name="line.352"></a>
-<FONT color="green">353</FONT>    <a name="line.353"></a>
-<FONT color="green">354</FONT>            return Proxy.newProxyInstance(loader, new Class[]{api}, handler);<a name="line.354"></a>
-<FONT color="green">355</FONT>        }<a name="line.355"></a>
-<FONT color="green">356</FONT>    <a name="line.356"></a>
-<FONT color="green">357</FONT>        AbstractHessianInput getHessianInput(InputStream is)<a name="line.357"></a>
-<FONT color="green">358</FONT>        {<a name="line.358"></a>
-<FONT color="green">359</FONT>            return getHessian2Input(is);<a name="line.359"></a>
-<FONT color="green">360</FONT>        }<a name="line.360"></a>
-<FONT color="green">361</FONT>    <a name="line.361"></a>
-<FONT color="green">362</FONT>        AbstractHessianInput getHessian1Input(InputStream is)<a name="line.362"></a>
-<FONT color="green">363</FONT>        {<a name="line.363"></a>
-<FONT color="green">364</FONT>            AbstractHessianInput in;<a name="line.364"></a>
-<FONT color="green">365</FONT>    <a name="line.365"></a>
-<FONT color="green">366</FONT>            if (debug)<a name="line.366"></a>
-<FONT color="green">367</FONT>            {<a name="line.367"></a>
-<FONT color="green">368</FONT>                is = new HessianDebugInputStream(is, new PrintWriter(System.out));<a name="line.368"></a>
-<FONT color="green">369</FONT>            }<a name="line.369"></a>
-<FONT color="green">370</FONT>    <a name="line.370"></a>
-<FONT color="green">371</FONT>            in = new HessianInput(is);<a name="line.371"></a>
+<FONT color="green">318</FONT>                <a name="line.318"></a>
+<FONT color="green">319</FONT>                ssl = "amqps".equals(uri.getScheme());<a name="line.319"></a>
+<FONT color="green">320</FONT>                <a name="line.320"></a>
+<FONT color="green">321</FONT>                hostname = uri.getHost();<a name="line.321"></a>
+<FONT color="green">322</FONT>                if (uri.getPort() != -1)<a name="line.322"></a>
+<FONT color="green">323</FONT>                {<a name="line.323"></a>
+<FONT color="green">324</FONT>                    port = uri.getPort();<a name="line.324"></a>
+<FONT color="green">325</FONT>                }<a name="line.325"></a>
+<FONT color="green">326</FONT>    <a name="line.326"></a>
+<FONT color="green">327</FONT>                String userinfo = uri.getUserInfo();<a name="line.327"></a>
+<FONT color="green">328</FONT>                if (userinfo != null)<a name="line.328"></a>
+<FONT color="green">329</FONT>                {<a name="line.329"></a>
+<FONT color="green">330</FONT>                    String[] parts = userinfo.split(":");<a name="line.330"></a>
+<FONT color="green">331</FONT>                    user = parts[0];<a name="line.331"></a>
+<FONT color="green">332</FONT>                    if (parts.length &gt; 0)<a name="line.332"></a>
+<FONT color="green">333</FONT>                    {<a name="line.333"></a>
+<FONT color="green">334</FONT>                        password = parts[1];<a name="line.334"></a>
+<FONT color="green">335</FONT>                    }<a name="line.335"></a>
+<FONT color="green">336</FONT>                }<a name="line.336"></a>
+<FONT color="green">337</FONT>    <a name="line.337"></a>
+<FONT color="green">338</FONT>                Pattern pattern = Pattern.compile("/([^/]+)(/(.*))?");<a name="line.338"></a>
+<FONT color="green">339</FONT>                Matcher matcher = pattern.matcher(uri.getPath());<a name="line.339"></a>
+<FONT color="green">340</FONT>                if (matcher.matches())<a name="line.340"></a>
+<FONT color="green">341</FONT>                {<a name="line.341"></a>
+<FONT color="green">342</FONT>                    virtualhost = matcher.group(1);<a name="line.342"></a>
+<FONT color="green">343</FONT>                    if (matcher.groupCount() &gt; 1 &amp;&amp; matcher.group(3) != null)<a name="line.343"></a>
+<FONT color="green">344</FONT>                    {<a name="line.344"></a>
+<FONT color="green">345</FONT>                        queuePrefix = matcher.group(3);<a name="line.345"></a>
+<FONT color="green">346</FONT>                    }<a name="line.346"></a>
+<FONT color="green">347</FONT>                }<a name="line.347"></a>
+<FONT color="green">348</FONT>            }<a name="line.348"></a>
+<FONT color="green">349</FONT>            catch (URISyntaxException e)<a name="line.349"></a>
+<FONT color="green">350</FONT>            {<a name="line.350"></a>
+<FONT color="green">351</FONT>                throw (MalformedURLException) new MalformedURLException().initCause(e);<a name="line.351"></a>
+<FONT color="green">352</FONT>            }<a name="line.352"></a>
+<FONT color="green">353</FONT>            <a name="line.353"></a>
+<FONT color="green">354</FONT>            AMQPHessianProxy handler = new AMQPHessianProxy(this);<a name="line.354"></a>
+<FONT color="green">355</FONT>    <a name="line.355"></a>
+<FONT color="green">356</FONT>            return (T) Proxy.newProxyInstance(loader, new Class[]{api}, handler);<a name="line.356"></a>
+<FONT color="green">357</FONT>        }<a name="line.357"></a>
+<FONT color="green">358</FONT>    <a name="line.358"></a>
+<FONT color="green">359</FONT>        AbstractHessianInput getHessianInput(InputStream is)<a name="line.359"></a>
+<FONT color="green">360</FONT>        {<a name="line.360"></a>
+<FONT color="green">361</FONT>            return getHessian2Input(is);<a name="line.361"></a>
+<FONT color="green">362</FONT>        }<a name="line.362"></a>
+<FONT color="green">363</FONT>    <a name="line.363"></a>
+<FONT color="green">364</FONT>        AbstractHessianInput getHessian1Input(InputStream is)<a name="line.364"></a>
+<FONT color="green">365</FONT>        {<a name="line.365"></a>
+<FONT color="green">366</FONT>            AbstractHessianInput in;<a name="line.366"></a>
+<FONT color="green">367</FONT>    <a name="line.367"></a>
+<FONT color="green">368</FONT>            if (debug)<a name="line.368"></a>
+<FONT color="green">369</FONT>            {<a name="line.369"></a>
+<FONT color="green">370</FONT>                is = new HessianDebugInputStream(is, new PrintWriter(System.out));<a name="line.370"></a>
+<FONT color="green">371</FONT>            }<a name="line.371"></a>
 <FONT color="green">372</FONT>    <a name="line.372"></a>
-<FONT color="green">373</FONT>            in.setRemoteResolver(getRemoteResolver());<a name="line.373"></a>
+<FONT color="green">373</FONT>            in = new HessianInput(is);<a name="line.373"></a>
 <FONT color="green">374</FONT>    <a name="line.374"></a>
-<FONT color="green">375</FONT>            in.setSerializerFactory(getSerializerFactory());<a name="line.375"></a>
+<FONT color="green">375</FONT>            in.setRemoteResolver(getRemoteResolver());<a name="line.375"></a>
 <FONT color="green">376</FONT>    <a name="line.376"></a>
-<FONT color="green">377</FONT>            return in;<a name="line.377"></a>
-<FONT color="green">378</FONT>        }<a name="line.378"></a>
-<FONT color="green">379</FONT>    <a name="line.379"></a>
-<FONT color="green">380</FONT>        AbstractHessianInput getHessian2Input(InputStream is)<a name="line.380"></a>
-<FONT color="green">381</FONT>        {<a name="line.381"></a>
-<FONT color="green">382</FONT>            AbstractHessianInput in;<a name="line.382"></a>
-<FONT color="green">383</FONT>    <a name="line.383"></a>
-<FONT color="green">384</FONT>            if (debug)<a name="line.384"></a>
-<FONT color="green">385</FONT>            {<a name="line.385"></a>
-<FONT color="green">386</FONT>                is = new HessianDebugInputStream(is, new PrintWriter(System.out));<a name="line.386"></a>
-<FONT color="green">387</FONT>            }<a name="line.387"></a>
-<FONT color="green">388</FONT>    <a name="line.388"></a>
-<FONT color="green">389</FONT>            in = new Hessian2Input(is);<a name="line.389"></a>
+<FONT color="green">377</FONT>            in.setSerializerFactory(getSerializerFactory());<a name="line.377"></a>
+<FONT color="green">378</FONT>    <a name="line.378"></a>
+<FONT color="green">379</FONT>            return in;<a name="line.379"></a>
+<FONT color="green">380</FONT>        }<a name="line.380"></a>
+<FONT color="green">381</FONT>    <a name="line.381"></a>
+<FONT color="green">382</FONT>        AbstractHessianInput getHessian2Input(InputStream is)<a name="line.382"></a>
+<FONT color="green">383</FONT>        {<a name="line.383"></a>
+<FONT color="green">384</FONT>            AbstractHessianInput in;<a name="line.384"></a>
+<FONT color="green">385</FONT>    <a name="line.385"></a>
+<FONT color="green">386</FONT>            if (debug)<a name="line.386"></a>
+<FONT color="green">387</FONT>            {<a name="line.387"></a>
+<FONT color="green">388</FONT>                is = new HessianDebugInputStream(is, new PrintWriter(System.out));<a name="line.388"></a>
+<FONT color="green">389</FONT>            }<a name="line.389"></a>
 <FONT color="green">390</FONT>    <a name="line.390"></a>
-<FONT color="green">391</FONT>            in.setRemoteResolver(getRemoteResolver());<a name="line.391"></a>
+<FONT color="green">391</FONT>            in = new Hessian2Input(is);<a name="line.391"></a>
 <FONT color="green">392</FONT>    <a name="line.392"></a>
-<FONT color="green">393</FONT>            in.setSerializerFactory(getSerializerFactory());<a name="line.393"></a>
+<FONT color="green">393</FONT>            in.setRemoteResolver(getRemoteResolver());<a name="line.393"></a>
 <FONT color="green">394</FONT>    <a name="line.394"></a>
-<FONT color="green">395</FONT>            return in;<a name="line.395"></a>
-<FONT color="green">396</FONT>        }<a name="line.396"></a>
-<FONT color="green">397</FONT>    <a name="line.397"></a>
-<FONT color="green">398</FONT>        AbstractHessianOutput getHessianOutput(OutputStream os)<a name="line.398"></a>
-<FONT color="green">399</FONT>        {<a name="line.399"></a>
-<FONT color="green">400</FONT>            AbstractHessianOutput out;<a name="line.400"></a>
-<FONT color="green">401</FONT>    <a name="line.401"></a>
-<FONT color="green">402</FONT>            if (isHessian2Request)<a name="line.402"></a>
-<FONT color="green">403</FONT>            {<a name="line.403"></a>
-<FONT color="green">404</FONT>                out = new Hessian2Output(os);<a name="line.404"></a>
-<FONT color="green">405</FONT>            }<a name="line.405"></a>
-<FONT color="green">406</FONT>            else<a name="line.406"></a>
-<FONT color="green">407</FONT>            {<a name="line.407"></a>
-<FONT color="green">408</FONT>                HessianOutput out1 = new HessianOutput(os);<a name="line.408"></a>
-<FONT color="green">409</FONT>                out = out1;<a name="line.409"></a>
-<FONT color="green">410</FONT>    <a name="line.410"></a>
-<FONT color="green">411</FONT>                if (isHessian2Reply)<a name="line.411"></a>
-<FONT color="green">412</FONT>                {<a name="line.412"></a>
-<FONT color="green">413</FONT>                    out1.setVersion(2);<a name="line.413"></a>
-<FONT color="green">414</FONT>                }<a name="line.414"></a>
-<FONT color="green">415</FONT>            }<a name="line.415"></a>
-<FONT color="green">416</FONT>    <a name="line.416"></a>
-<FONT color="green">417</FONT>            out.setSerializerFactory(getSerializerFactory());<a name="line.417"></a>
+<FONT color="green">395</FONT>            in.setSerializerFactory(getSerializerFactory());<a name="line.395"></a>
+<FONT color="green">396</FONT>    <a name="line.396"></a>
+<FONT color="green">397</FONT>            return in;<a name="line.397"></a>
+<FONT color="green">398</FONT>        }<a name="line.398"></a>
+<FONT color="green">399</FONT>    <a name="line.399"></a>
+<FONT color="green">400</FONT>        AbstractHessianOutput getHessianOutput(OutputStream os)<a name="line.400"></a>
+<FONT color="green">401</FONT>        {<a name="line.401"></a>
+<FONT color="green">402</FONT>            AbstractHessianOutput out;<a name="line.402"></a>
+<FONT color="green">403</FONT>    <a name="line.403"></a>
+<FONT color="green">404</FONT>            if (isHessian2Request)<a name="line.404"></a>
+<FONT color="green">405</FONT>            {<a name="line.405"></a>
+<FONT color="green">406</FONT>                out = new Hessian2Output(os);<a name="line.406"></a>
+<FONT color="green">407</FONT>            }<a name="line.407"></a>
+<FONT color="green">408</FONT>            else<a name="line.408"></a>
+<FONT color="green">409</FONT>            {<a name="line.409"></a>
+<FONT color="green">410</FONT>                HessianOutput out1 = new HessianOutput(os);<a name="line.410"></a>
+<FONT color="green">411</FONT>                out = out1;<a name="line.411"></a>
+<FONT color="green">412</FONT>    <a name="line.412"></a>
+<FONT color="green">413</FONT>                if (isHessian2Reply)<a name="line.413"></a>
+<FONT color="green">414</FONT>                {<a name="line.414"></a>
+<FONT color="green">415</FONT>                    out1.setVersion(2);<a name="line.415"></a>
+<FONT color="green">416</FONT>                }<a name="line.416"></a>
+<FONT color="green">417</FONT>            }<a name="line.417"></a>
 <FONT color="green">418</FONT>    <a name="line.418"></a>
-<FONT color="green">419</FONT>            return out;<a name="line.419"></a>
-<FONT color="green">420</FONT>        }<a name="line.420"></a>
-<FONT color="green">421</FONT>    }<a name="line.421"></a>
-<FONT color="green">422</FONT>    <a name="line.422"></a>
+<FONT color="green">419</FONT>            out.setSerializerFactory(getSerializerFactory());<a name="line.419"></a>
+<FONT color="green">420</FONT>    <a name="line.420"></a>
+<FONT color="green">421</FONT>            return out;<a name="line.421"></a>
+<FONT color="green">422</FONT>        }<a name="line.422"></a>
+<FONT color="green">423</FONT>    }<a name="line.423"></a>
+<FONT color="green">424</FONT>    <a name="line.424"></a>
 
 
 
