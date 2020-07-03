@@ -19,6 +19,7 @@ package org.apache.qpid.contrib.hessian;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeoutException;
 
+import com.caucho.hessian.client.HessianRuntimeException;
 import org.apache.qpid.contrib.hessian.service.EchoService;
 import org.apache.qpid.contrib.hessian.service.EchoServiceEndpoint;
 import org.apache.qpid.contrib.hessian.service.FailingService;
@@ -162,6 +163,25 @@ public class AMQPHessianProxyTest
         catch (IllegalStateException e)
         {
             assertTrue(e.getMessage().contains("must implement java.io.Serializable"));
+        }
+    }
+
+    @Test
+    public void testMissingEndpoint() throws Exception
+    {
+        AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
+        factory.setReadTimeout(5000);
+
+        EchoService service = factory.create(EchoService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
+
+        try
+        {
+            service.echo("Hello Hessian!");
+            fail("HessianRuntimeException expected");
+        }
+        catch (HessianRuntimeException e)
+        {
+            assertEquals("Service queue not found: EchoService",  e.getMessage());
         }
     }
 }
