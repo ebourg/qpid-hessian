@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.Deflater;
@@ -259,7 +260,7 @@ public class AMQPHessianProxy implements InvocationHandler
     {
         boolean done = false;
 
-        private AsyncResponse<MessageTransfer> response = new AsyncResponse<MessageTransfer>();
+        private CompletableFuture<MessageTransfer> response = new CompletableFuture<>();
 
         public Future<MessageTransfer> getResponse()
         {
@@ -276,7 +277,7 @@ public class AMQPHessianProxy implements InvocationHandler
             if (!response.isDone())
             {
                 session.setSessionListener(null);
-                response.set(xfr);
+                response.complete(xfr);
                 done = true;
             }
             
