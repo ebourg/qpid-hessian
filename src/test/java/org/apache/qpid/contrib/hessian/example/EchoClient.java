@@ -21,7 +21,6 @@ import org.apache.qpid.contrib.hessian.service.EchoService;
 
 /**
  * @author Emmanuel Bourg
- * @version $Revision$, $Date$
  */
 public class EchoClient {
 

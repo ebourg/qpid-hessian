@@ -23,7 +23,6 @@ import org.apache.qpid.transport.Session;
 
 /**
  * @author Emmanuel Bourg
- * @version $Revision$, $Date$
  */
 public class EchoServer {
 

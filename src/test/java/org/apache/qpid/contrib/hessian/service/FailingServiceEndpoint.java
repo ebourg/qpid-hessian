@@ -20,7 +20,6 @@ import org.apache.qpid.contrib.hessian.HessianEndpoint;
 
 /**
  * @author Emmanuel Bourg
- * @version $Revision$, $Date$
  */
 public class FailingServiceEndpoint extends HessianEndpoint implements FailingService
 {

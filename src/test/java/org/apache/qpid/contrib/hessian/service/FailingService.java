@@ -20,7 +20,6 @@ package org.apache.qpid.contrib.hessian.service;
  * A service designed to fail.
  * 
  * @author Emmanuel Bourg
- * @version $Revision$, $Date$
  */
 public interface FailingService
 {
