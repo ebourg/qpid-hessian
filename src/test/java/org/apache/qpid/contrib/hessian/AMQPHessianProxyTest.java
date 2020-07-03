@@ -33,6 +33,10 @@ import static org.junit.Assert.*;
 public class AMQPHessianProxyTest
 {
     protected final String HOSTNAME = "localhost";
+    protected final int PORT = 5672;
+    protected final String VIRTUALHOST = "test";
+    protected final String USERNAME = "guest";
+    protected final String PASSWORD = "guest";
 
     protected Connection connection;
 
@@ -40,7 +44,7 @@ public class AMQPHessianProxyTest
     public void setUp()
     {
         connection = new Connection();
-        connection.connect(HOSTNAME, 5672, "test", "guest", "guest");
+        connection.connect(HOSTNAME, PORT, VIRTUALHOST, USERNAME, PASSWORD);
     }
 
     @After
@@ -63,7 +67,7 @@ public class AMQPHessianProxyTest
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
 
-        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        EchoService service = factory.create(EchoService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
         String message = "Hello Hessian!";
 
         assertEquals(message, service.echo(message));
@@ -79,7 +83,7 @@ public class AMQPHessianProxyTest
         factory.setReadTimeout(5000);
         factory.setCompressed(true);
 
-        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        EchoService service = factory.create(EchoService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
         String message = "Hello Hessian!";
 
         try
@@ -110,7 +114,7 @@ public class AMQPHessianProxyTest
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
         
-        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        EchoService service = factory.create(EchoService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
         String message = "Hello again Hessian!";
 
         assertEquals(message, service.echo(message));
@@ -125,7 +129,7 @@ public class AMQPHessianProxyTest
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(3000);
         
-        FailingService service = factory.create(FailingService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        FailingService service = factory.create(FailingService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
         
         try
         {
@@ -148,7 +152,7 @@ public class AMQPHessianProxyTest
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
         
-        FailingService service = factory.create(FailingService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        FailingService service = factory.create(FailingService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
         
         try
         {

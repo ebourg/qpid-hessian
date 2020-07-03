@@ -49,7 +49,7 @@ public class HessianEndpointTest extends AMQPHessianProxyTest
         factory.setReadTimeout(5000);
         factory.setQueuePrefix("foo");
         
-        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test");
+        EchoService service = factory.create(EchoService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST);
         String message = "Hello Hessian!";
         
         assertEquals(message, service.echo(message));
@@ -63,7 +63,7 @@ public class HessianEndpointTest extends AMQPHessianProxyTest
         AMQPHessianProxyFactory factory = new AMQPHessianProxyFactory();
         factory.setReadTimeout(5000);
         
-        EchoService service = factory.create(EchoService.class, "qpid://guest:guest@" + HOSTNAME + "/test/foo");
+        EchoService service = factory.create(EchoService.class, "amqp://" + USERNAME + ":" + PASSWORD + "@" + HOSTNAME + ":" + PORT + "/" + VIRTUALHOST + "/foo");
         String message = "Hello Hessian!";
         
         assertEquals(message, service.echo(message));
