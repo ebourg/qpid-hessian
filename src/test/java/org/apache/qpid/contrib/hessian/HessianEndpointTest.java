@@ -19,6 +19,9 @@ package org.apache.qpid.contrib.hessian;
 import org.apache.qpid.contrib.hessian.service.EchoService;
 import org.apache.qpid.contrib.hessian.service.EchoServiceEndpoint;
 import org.apache.qpid.contrib.hessian.service.EchoServiceImpl;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class HessianEndpointTest extends AMQPHessianProxyTest
 {
@@ -36,7 +39,8 @@ public class HessianEndpointTest extends AMQPHessianProxyTest
         endpoint.setQueuePrefix("foo");
         endpoint.run(connection);
     }
-    
+
+    @Test
     public void testQueuePrefix() throws Exception
     {
         startEndpointWithPrefix();
@@ -51,6 +55,7 @@ public class HessianEndpointTest extends AMQPHessianProxyTest
         assertEquals(message, service.echo(message));
     }
 
+    @Test
     public void testQueuePrefix2() throws Exception
     {
         startEndpointWithPrefix();

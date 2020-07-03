@@ -19,26 +19,32 @@ package org.apache.qpid.contrib.hessian;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeoutException;
 
-import junit.framework.TestCase;
 import org.apache.qpid.contrib.hessian.service.EchoService;
 import org.apache.qpid.contrib.hessian.service.EchoServiceEndpoint;
 import org.apache.qpid.contrib.hessian.service.FailingService;
 import org.apache.qpid.contrib.hessian.service.FailingServiceEndpoint;
 import org.apache.qpid.transport.Connection;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-public class AMQPHessianProxyTest extends TestCase
+import static org.junit.Assert.*;
+
+public class AMQPHessianProxyTest
 {
     protected final String HOSTNAME = "localhost";
 
     protected Connection connection;
 
-    protected void setUp() throws Exception
+    @Before
+    public void setUp()
     {
         connection = new Connection();
         connection.connect(HOSTNAME, 5672, "test", "guest", "guest");
     }
 
-    protected void tearDown() throws Exception
+    @After
+    public void tearDown()
     {
         connection.close();
     }
@@ -49,6 +55,7 @@ public class AMQPHessianProxyTest extends TestCase
         endpoint.run(connection);
     }
 
+    @Test
     public void testEcho() throws Exception
     {
         startEndpoint();
@@ -63,6 +70,7 @@ public class AMQPHessianProxyTest extends TestCase
         assertEquals(message, service.echo(message));
     }
 
+    @Test
     public void testException() throws Exception
     {
         startEndpoint();
@@ -89,6 +97,7 @@ public class AMQPHessianProxyTest extends TestCase
         }
     }
 
+    @Test
     public void testResuming() throws Exception
     {
         startEndpoint();
@@ -107,6 +116,7 @@ public class AMQPHessianProxyTest extends TestCase
         assertEquals(message, service.echo(message));
     }
 
+    @Test
     public void testTimeout() throws Exception
     {
         FailingServiceEndpoint endpoint = new FailingServiceEndpoint();
@@ -129,6 +139,7 @@ public class AMQPHessianProxyTest extends TestCase
         }
     }
 
+    @Test
     public void testSerializationError() throws Exception
     {
         FailingServiceEndpoint endpoint = new FailingServiceEndpoint();
