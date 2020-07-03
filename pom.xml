@@ -118,8 +118,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>8</source>
+          <target>8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -150,7 +150,7 @@
           <quiet>true</quiet>
           <linksource>true</linksource>
           <links>
-            <link>http://docs.oracle.com/javase/6/docs/api/</link>
+            <link>http://docs.oracle.com/javase/8/docs/api/</link>
             <link>http://www.caucho.com/resin-4.0-javadoc/</link>
           </links>
         </configuration> 
