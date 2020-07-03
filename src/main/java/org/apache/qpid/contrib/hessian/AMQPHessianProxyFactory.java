@@ -329,7 +329,7 @@ public class AMQPHessianProxyFactory /*implements ServiceProxyFactory*/
             {
                 String[] parts = userinfo.split(":");
                 user = parts[0];
-                if (parts.length > 0)
+                if (parts.length > 1)
                 {
                     password = parts[1];
                 }
